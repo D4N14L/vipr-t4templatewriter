@@ -1,0 +1,108 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension="\\" #>
+<#
+CustomT4Host host       = (CustomT4Host) Host;
+OdcmModel model         = host.CurrentModel;
+CodeWriterPython writer = (CodeWriterPython) host.CodeWriter;
+OdcmClass entity        = host.CurrentType.AsOdcmClass();
+var entityName          = entity.Name.ToUpperFirstChar();
+var entityRequest       = entityName + "Request";
+var jsonContentType     = "application/json";
+#>
+<#=writer.WriteHeader()#>
+
+class <#=entityRequest#>(RequestBase, <#=entityRequest#>Base)
+"""The type <#=entityRequest#>."""
+    
+    def __init__(self, request_url, authenticator, http_provider, options):
+        """Constructs a new <#=entityRequest#>.
+
+        :param request_url: The request URL.
+        :type request_url: str
+        :param authenticator: The authenticator for generating an authentication header.
+        :type authenticator: AuthenticatorBase
+        :param http_provider:
+        :type http_provider: HttpProviderBase
+        :param options: Query option name value pairs for the request.
+        :type options: dict"""
+        super().__init__(request_url, authenticator, http_provider, options)
+
+    @abc.abstractmethod
+    def create_async(self, <#=entity.Name.ToUnderscore()#>):
+        """Creates the specified <#=entityName#> using PUT
+
+        :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to create.
+        :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
+        :returns: The created <#=entityName#>.
+        :rtype: <#=entityName#>."""
+        self._content_type = "<#=jsonContentType#>"
+        self._method = "PUT"
+        entity = self.send_async(<#=entity.Name.ToUnderscore()#>) #note is this how I want to do the sending? old was awat this.send...
+        # self.InitializeCollectionProperties(entity); this must be done, for paging, but not yet
+        return entity
+
+    @abc.abstractmethod
+    def delete_async(self):
+        """Deletes the specified <#=entityName#>."""
+        self._method = "DELETE"
+        self.send_async() #old was send_async(null).. take this into account
+
+    @abc.abstractmethod
+    def get_async(self):
+        """Gets the specified <#=entityName#>.
+        :returns: The <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        self._method = "GET"
+        entity = this.send_async(); #old was send_async(null).. take this into account
+        # this.InitializeCollectionProperties(entity); see previous
+        return entity
+
+    @abc.abstractmethod
+    def update_async(self, <#=entity.Name.ToUnderscore()#>):
+        """Updates the specified <#=entityName#>.
+        :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to update.
+        :type: <#=entityName#>
+        :returns: The updated <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        self._content_type = "<#=jsonContentType#>"
+        self._method = "PATCH"
+        entity = this.send_async(<#=entity.Name.ToUnderscore()#>);
+        # this.InitializeCollectionProperties(entity); see previous
+        return entity;
+
+    @abc.abstractmethod
+    def expand(self, value):
+        """Adds the specified expand value to the request.
+        :param value: The expand value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=entityRequest#>"""
+        self._query_options["expand"] = value
+        return self
+
+@abc.abstractmethod
+    def select(self, value):
+        """Adds the specified select value to the request.
+        :param value: The select value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=entityRequest#>"""
+        self._query_options["select"] = value
+        return self
+    
+    @abc.abstractmethod
+    def top(self, value):
+        """Adds the specified select top to the request.
+        :param value: The top value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=entityRequest#>"""
+        self._query_options["top"] = value
+        return self
+
+    """
+    This is all for collections... look into at a later time
+    
+    Gina has a working copy at
+    vipr-t4templatewriter-pr/src/T4TemplateWriter/Templates/T4/CSharp/odata/EntityRequest.tt
+    """

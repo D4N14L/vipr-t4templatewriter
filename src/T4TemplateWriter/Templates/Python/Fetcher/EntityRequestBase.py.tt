@@ -1,0 +1,77 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension="\\" #>
+<#
+CustomT4Host host       = (CustomT4Host) Host;
+OdcmModel model         = host.CurrentModel;
+CodeWriterPython writer = (CodeWriterPython) host.CodeWriter;
+OdcmClass entity        = host.CurrentType.AsOdcmClass();
+var entityName = entity.Name.ToUpperFirstChar();
+var entityRequest = entityName + "Request";
+
+#>
+<#=writer.WriteHeader()#>
+
+import abc
+
+class <#=entityRequest#>Base(object):
+    """Base class for <#=entityRequest#> """
+
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def create_async(self, <#=entity.Name.ToUnderscore()#>):
+        """Creates the specified <#=entityName#> using PUT
+
+        :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to create.
+        :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
+        :returns: The created <#=entityName#>.
+        :rtype: <#=entityName#>."""
+        return
+
+    @abc.abstractmethod
+    def delete_async(self):
+        """Deletes the specified <#=entityName#>."""
+        return
+
+    @abc.abstractmethod
+    def get_async(self):
+        """Gets the specified <#=entityName#>.
+        :returns: The <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        return
+
+    @abc.abstractmethod
+    def update_async(self, <#=entity.Name.ToUnderscore()#>):
+        """Updates the specified <#=entityName#>.
+        :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to update.
+        :type: <#=entityName#>
+        :returns: The updated <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        return
+
+    @abc.abstractmethod
+    def expand(self, value):
+        """Adds the specified expand value to the request.
+        :param value: The expand value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=entityRequest#>Base"""
+        return
+
+    @abc.abstractmethod
+    def select(self, value):
+        """Adds the specified select value to the request.
+        :param value: The select value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=entityRequest#>Base"""
+        return
+
+    @abc.abstractmethod
+    def top(self, value):
+        """Adds the specified select top to the request.
+        :param value: The top value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=entityRequest#>Base"""
+        return
