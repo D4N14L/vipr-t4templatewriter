@@ -25,6 +25,10 @@ namespace Vipr.T4TemplateWriter.Extensions
             yield return value;
         }
 
+        public static String ToUnderscore(this String input) {
+            return Regex.Replace(input, "(?<=[a-z])([A-Z])", "_$1", RegexOptions.Compiled).ToLower();
+        }
+
         public static string ToLowerFirstChar(this string input) {
             return Char.ToLowerInvariant(input[0]) + input.Substring(1);
         }

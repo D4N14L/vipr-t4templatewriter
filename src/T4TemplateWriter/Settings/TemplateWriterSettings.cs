@@ -11,7 +11,8 @@ namespace Vipr.T4TemplateWriter.Settings
         public TemplateWriterSettings()
         {
             // defaults
-            AvailableLanguages = new List<string> { "Java", "ObjC" };
+            AvailableLanguages = new List<string> { "Java", "ObjC", "Python" };
+            TargetLanguage = "Python";
             PrimaryNamespaceName = "";
             NamespacePrefix = "MS";
             Plugins = new List<string>();

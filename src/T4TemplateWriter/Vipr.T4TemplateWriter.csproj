@@ -48,8 +48,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeHelpers\CodeWriterBase.cs" />
+    <Compile Include="CodeHelpers\Python\CodeWriterPython.cs" />
     <Compile Include="CodeHelpers\Java\CodeWriterJava.cs" />
     <Compile Include="CodeHelpers\ObjC\CodeWriterObjC.cs" />
+    <Compile Include="PathWriters\PythonPathWriter.cs" />
     <Compile Include="TemplateProcessor\CustomT4Host.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="CodeHelpers\Java\TypeHelperJava.cs" />
@@ -72,6 +74,22 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".config\TemplateWriterSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\Python\Fetcher\EntityRequest.py.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\Python\Fetcher\EntityRequestBase.py.tt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\Python\Model\ComplexType.py.tt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\Python\Model\EntityType.py.tt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\Python\Model\EnumType.py.tt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Templates\Java\Model\ComplexType.java.tt">

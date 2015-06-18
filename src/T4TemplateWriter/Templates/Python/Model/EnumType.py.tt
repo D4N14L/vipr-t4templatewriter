@@ -1,0 +1,23 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension="\\" #>
+<#
+CustomT4Host host       = (CustomT4Host) Host;
+OdcmModel model         = host.CurrentModel;
+CodeWriterPython writer   = (CodeWriterPython) host.CodeWriter;
+var enumT = host.CurrentType.AsOdcmEnum();
+#>
+<#=writer.WriteHeader()#>
+
+from enum import Enum
+
+class <#=enumT.Name.ToUpperFirstChar()#>(Enum):
+    """The Enum <#=enumT.Name.ToUpperFirstChar().SplitCamelCase()#>."""
+<#
+    foreach(var value in enumT.Members)
+    {
+#>
+    #<#= value.Name.SplitCamelCase()#>
+    <#= value.Name.SanitizePropertyName()#>,
+<#
+    }
+#>

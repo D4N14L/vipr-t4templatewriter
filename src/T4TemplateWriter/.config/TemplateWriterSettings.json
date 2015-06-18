@@ -1,8 +1,8 @@
 ﻿{
-    "AvailableLanguages": [ "Java", "ObjC" ],
-    "TargetLanguage": "Java",
+    "AvailableLanguages": [ "Java", "ObjC", "Python" ],
+    "TargetLanguage": "Python",
     "Plugins": [ ],
-    "PrimaryNamespaceName": "Microsoft.CoreServices",
+    "PrimaryNamespaceName": "oneDrive",
     "NamespacePrefix": "MS",
     "InitializeCollections": "false",
     "AllowShortActions": "false"

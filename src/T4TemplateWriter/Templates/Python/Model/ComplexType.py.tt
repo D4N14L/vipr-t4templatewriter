@@ -1,0 +1,40 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension="\\" #>
+<#
+CustomT4Host host       = (CustomT4Host) Host;
+OdcmModel model         = host.CurrentModel;
+CodeWriterPython writer   = (CodeWriterPython) host.CodeWriter;
+OdcmClass complex = (OdcmClass)host.CurrentType;
+#>
+<#=writer.WriteHeader()#>
+
+class <#=complex.Name.ToUpperFirstChar()#>:
+    
+    <# 
+        foreach(var property in complex.Properties){
+            var propertyName = property.Name.ToUnderscore();
+    #>
+
+    @property
+    def <#=propertyName#>(self):
+        """Gets <#=property.Name#> """
+        return self.__<#=propertyName#>
+
+    @<#=propertyName#>.setter
+    def <#=propertyName#>(self, val):
+        """Sets <#=property.Name#> """
+        self.__<#=propertyName#> = val
+
+    <#
+    }
+    #>
+
+    @property
+    def additional_data(self):
+        """Gets additional data dictionary"""
+        return self.__additional_data
+
+    @additional_data.setter
+    def additional_data(self, val):
+        """Sets additional data dictionary"""
+        self.__additional_data = val
