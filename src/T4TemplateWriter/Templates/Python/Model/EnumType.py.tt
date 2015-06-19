@@ -13,11 +13,13 @@ from enum import Enum
 class <#=enumT.Name.ToUpperFirstChar()#>(Enum):
     """The Enum <#=enumT.Name.ToUpperFirstChar().SplitCamelCase()#>."""
 <#
+    count = 0
     foreach(var value in enumT.Members)
     {
+        count++;
 #>
     #<#= value.Name.SplitCamelCase()#>
-    <#= value.Name.SanitizePropertyName()#>,
+    <#= value.Name.SanitizePropertyName()#> = <#= count#>
 <#
     }
 #>
