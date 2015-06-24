@@ -1,0 +1,58 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension="\\" #>
+<#
+CustomT4Host host       = (CustomT4Host) Host;
+OdcmModel model         = host.CurrentModel;
+CodeWriterPython writer = (CodeWriterPython) host.CodeWriter;
+OdcmClass entity        = host.CurrentType.AsOdcmClass();
+var entityName          = entity.Name.ToUpperFirstChar();
+var entityRequest       = entityName + "Request";
+var entityBuilder       = entityName + "RequestBuilder";
+var jsonContentType     = "application/json";
+#>
+<#=writer.WriteHeader()#>
+
+from .<#=entityRequest.ToUnderscore()#> import <#=entityRequest#>
+from ..request_builder_base import RequestBuilderBase
+
+class <#=entityBuilder#>(RequestBuilderBase):
+
+    def __init__(self, request_url, client):
+        super(<#=entityBuilder#>, self).__init__(request_url, client)
+
+    def request(self, options = None):
+        return <#=entityRequest#>(self.request_url, self.client, options)
+
+<#  foreach(var child in entity.Derived)
+    {
+        var childName = child.Name.ToUnderscore();
+        var childNameBuilder = child.Name.ToUpperFirstChar() + "RequestBuilder";
+#>
+    @property
+    def <#=childName#>(self):
+        return <#=childNameBuilder#>(self.append_to_request_url("<#=child.Name#>"), self.client)
+
+<#
+    }
+
+    foreach(var prop in entity.NavigationProperties()){
+
+        var propName = prop.Name.ToUnderscore();
+        var propRequestBuilder = prop.Name.ToUpperFirstChar() + "RequestBuilder";
+    
+        if(prop.IsCollection())
+        {
+            //TODO: collections
+        }
+        else
+        {
+#>
+    @property
+    def <#=propName#>(self):
+        return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
+
+<#
+        }
+    }
+    //TODO: Stream, methods
+#>

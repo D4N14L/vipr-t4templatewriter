@@ -51,6 +51,7 @@
     <Compile Include="CodeHelpers\Python\CodeWriterPython.cs" />
     <Compile Include="CodeHelpers\Java\CodeWriterJava.cs" />
     <Compile Include="CodeHelpers\ObjC\CodeWriterObjC.cs" />
+    <Compile Include="CodeHelpers\Python\TypeHelperPython.cs" />
     <Compile Include="PathWriters\PythonPathWriter.cs" />
     <Compile Include="TemplateProcessor\CustomT4Host.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
@@ -76,11 +77,20 @@
     <None Include=".config\TemplateWriterSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Templates\Python\Fetcher\EntityCollectionPage.py.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\Python\Fetcher\EntityCollectionRequest.py.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Templates\Python\Fetcher\EntityRequest.py.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Templates\Python\Fetcher\EntityRequestBase.py.tt">
+    <None Include="Templates\Python\Fetcher\EntityRequestBuilder.py.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Templates\Python\Model\ComplexType.py.tt">

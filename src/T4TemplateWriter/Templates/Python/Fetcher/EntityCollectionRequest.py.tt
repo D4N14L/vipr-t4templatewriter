@@ -1,0 +1,105 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension="\\" #>
+<#
+CustomT4Host host       = (CustomT4Host) Host;
+OdcmModel model         = host.CurrentModel;
+CodeWriterPython writer = (CodeWriterPython) host.CodeWriter;
+var clientName          = model.GetEntityContainer().ToUpperFirstChar() + "Client";
+var clientNameLower     = clientName.ToLowerFirstChar();
+var prop                = host.CurrentType as OdcmProperty;
+var innerEntity = prop.Type;
+var innerEntityType = innerEntity.Name.ToUpperFirstChar();
+var collectionRequest = prop.Name.ToUpperFirstChar() + "CollectionRequest";
+var collectionPage = prop.Name.ToUpperFirstChar() + "CollectionPage";
+var collectionResponse = prop.Name.ToUpperFirstChar() + "CollectionResponse";
+TemplateWriterSettings settings = ConfigurationService.Settings;
+var jsonContentType     = "application/json";
+
+#>
+<#=writer.WriteHeader()#>
+
+from ..request_base import RequestBase
+import asyncio
+
+class <#=collectionRequest#>(RequestBase):
+    
+    def __init__(self, request_url, client, options):
+        super(<#=collectionRequest#>, self).__init__(request_url, client, options)
+
+<#
+    if (prop.IsCollectionWritable()){
+        Console.WriteLine("Found it!");
+
+#>
+    def add(self, entity):
+        self.content_type = "<#=jsonContentType#>"
+        self.method = "POST"
+        entity = <#=innerEntityType#>(self.send())
+        return entity
+
+    @asyncio.coroutine
+    def add_async(self, entity):
+        self.content_type = "<#=jsonContentType#>"
+        self.method = "POST"
+        entity_response = yield from self.send_async()
+        entity = <#=innerEntityType#>(entity_response)
+        return entity
+<#
+    }
+#>
+    def _parse_response(self.response):
+        """returns: The CollectionPage from within the response
+        :rtype: <#=collectionPage#>"""
+        if response and response.value and response.value.current_page:
+            if response.additional_data
+                next_page_link = response.additional_data["@odata.nextLink"]
+                if next_page_link:
+                    response.value.initialize_next_page_request(self.client, next_page_link)
+            return response.value
+        return None 
+
+    def get(self):
+        """returns: The CollectionPage
+        :rtype: <#=collectionPage#>"""
+        this.method = "GET"
+        response = <#=collectionResponse#>(self.send())
+        return self._parse_response(response)
+
+    @asyncio.coroutine
+    def get_async(self):
+        """returns: The CollectionPage
+        :rtype: <#=collectionPage#>"""
+        this.method = "GET"
+        response_json = yield from self.send_async()
+        response = <#=collectionResponse#>(response_json)
+        return self._parse_response(response)
+    
+    def expand(self, value):
+        """Adds the specified expand value to the request.
+        :param value: The expand value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=collectionRequest#>"""
+        self._query_options["expand"] = value
+        return self
+
+    def select(self, value):
+        """Adds the specified select value to the request.
+        :param value: The select value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=collectionRequest#>"""
+        self._query_options["select"] = value
+        return self
+    
+    def top(self, value):
+        """Adds the specified select top to the request.
+        :param value: The top value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=collectionRequest#>"""
+        self._query_options["top"] = value
+        return self
+
+
+
