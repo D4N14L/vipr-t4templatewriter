@@ -16,6 +16,13 @@ namespace Vipr.T4TemplateWriter
             return odcmProperty.IsCollection;
         }
 
+        public static bool IsCollectionWritable(this OdcmProperty odcmProperty)
+        {
+            return odcmProperty.LongDescription != null 
+                ? odcmProperty.LongDescription.Contains("Writable") 
+                : false;
+        }
+
 
         private static OdcmNamespace GetOdcmNamespace(OdcmModel model)
         {
