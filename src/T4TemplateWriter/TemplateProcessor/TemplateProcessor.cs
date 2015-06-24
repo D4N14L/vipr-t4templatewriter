@@ -22,10 +22,12 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
         EntityType,
         EnumType,
         EntityFetcher,
-        EntityRequestBase,
-        EntityRequest,
-        EntityRequestBuilderBase,
-        EntityRequestBuilder,
+        EntityRequestBase, //added
+        EntityRequest, //added
+        EntityRequestBuilderBase, //added
+        EntityRequestBuilder, //added
+        EntityCollectionPage, //added
+        EntityCollectionRequest, //added
         EntityOperations,
         EntityCollectionFetcher,
         EntityCollectionOperations,
@@ -68,10 +70,15 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
                 {FileType.EntityCollectionFetcher,      ProcessEntityTypes},
                 {FileType.EntityCollectionOperations,   ProcessEntityTypes},
                 {FileType.EntityFetcher,                ProcessEntityTypes},
-                {FileType.EntityRequest,                ProcessEntityTypes},
-                {FileType.EntityRequestBuilder,         ProcessEntityTypes},
-                {FileType.EntityRequestBase,                ProcessEntityTypes},
-                {FileType.EntityRequestBuilderBase,         ProcessEntityTypes},
+                {FileType.EntityRequest,                ProcessEntityTypes}, //added
+                {FileType.EntityRequestBuilder,         ProcessEntityTypes}, //added
+                {FileType.EntityRequestBase,            ProcessEntityTypes}, //added
+                {FileType.EntityRequestBuilderBase,     ProcessEntityTypes}, //added
+                {FileType.EntityCollectionPage,                  ProcessCollectionProperties},
+                {FileType.EntityCollectionRequest,               ProcessCollectionProperties},
+                //{FileType.EntityCollectionRequestBuilder,        ProcessCollectionProperties},
+                //{FileType.EntityCollectionResponse,              ProcessCollectionProperties},
+                //{FileType.EntityCollectionPage,         ProcessEntityTypes},
                 {FileType.EntityOperations,             ProcessEntityTypes},
 
                 // EntityContainer
@@ -133,6 +140,23 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
             var entityTypes = CurrentModel.GetEntityTypes();
             foreach (OdcmObject entityType in entityTypes) {
                 yield return ProcessTemplate(templateInfo, entityType);
+            }
+        }
+
+        public IEnumerable<TextFile> ProcessCollectionProperties(TemplateFileInfo templateInfo)
+        {
+            var collections = CurrentModel.GetEntityTypes().
+                SelectMany(et => et.Properties).
+                Where(prop => prop.IsCollection && prop.Type != null);
+
+            var containerEntitySets = CurrentModel.EntityContainer.Properties;
+            containerEntitySets.ForEach(set => set.IsCollection = true);
+
+            collections = collections.Union(containerEntitySets);
+
+            foreach (OdcmObject collection in collections)
+            {
+                yield return ProcessTemplate(templateInfo, collection);
             }
         }
 

@@ -11,23 +11,25 @@ var jsonContentType     = "application/json";
 #>
 <#=writer.WriteHeader()#>
 
-class <#=entityRequest#>(RequestBase, <#=entityRequest#>Base)
-"""The type <#=entityRequest#>."""
+from ..request_base import RequestBase
+from ..Models.<#=entity.Name.ToUnderscore()#> import <#=entityName#>
+import asyncio
+
+class <#=entityRequest#>(RequestBase):
+    """The type <#=entityRequest#>."""
     
-    def __init__(self, request_url, authenticator, http_provider, options):
+    def __init__(self, request_url, client, options):
         """Constructs a new <#=entityRequest#>.
 
         :param request_url: The request URL.
         :type request_url: str
-        :param authenticator: The authenticator for generating an authentication header.
-        :type authenticator: AuthenticatorBase
-        :param http_provider:
-        :type http_provider: HttpProviderBase
+        :param client: The client to make http calls with
+        :type client: BaseClient
         :param options: Query option name value pairs for the request.
         :type options: dict"""
-        super().__init__(request_url, authenticator, http_provider, options)
+        super().__init__(request_url, client, options)
 
-    @abc.abstractmethod
+    @asyncio.coroutine
     def create_async(self, <#=entity.Name.ToUnderscore()#>):
         """Creates the specified <#=entityName#> using PUT
 
@@ -35,42 +37,51 @@ class <#=entityRequest#>(RequestBase, <#=entityRequest#>Base)
         :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
         :returns: The created <#=entityName#>.
         :rtype: <#=entityName#>."""
-        self._content_type = "<#=jsonContentType#>"
-        self._method = "PUT"
+        self.content_type = "<#=jsonContentType#>"
+        self.method = "PUT"
         entity = self.send_async(<#=entity.Name.ToUnderscore()#>) #note is this how I want to do the sending? old was awat this.send...
         # self.InitializeCollectionProperties(entity); this must be done, for paging, but not yet
         return entity
 
-    @abc.abstractmethod
+    @asyncio.coroutine
     def delete_async(self):
         """Deletes the specified <#=entityName#>."""
-        self._method = "DELETE"
+        self.method = "DELETE"
         self.send_async() #old was send_async(null).. take this into account
 
-    @abc.abstractmethod
+    def get(self):
+        """Gets the specified <#=entityName#>.
+        :returns: The <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        self.method = "GET"
+        entity = <#=entityName#>(self.send()) #old was send_async(null).. take this into account
+        # this.InitializeCollectionProperties(entity); see previous
+        return entity
+
+    @asyncio.coroutine
     def get_async(self):
         """Gets the specified <#=entityName#>.
         :returns: The <#=entityName#>.
         :rtype: <#=entityName#>"""
-        self._method = "GET"
-        entity = this.send_async(); #old was send_async(null).. take this into account
+        self.method = "GET"
+        entity_response = yield from self.send_async() #old was send_async(null).. take this into account
+        entity = <#=entityName#>(entity_response)
         # this.InitializeCollectionProperties(entity); see previous
         return entity
 
-    @abc.abstractmethod
+    @asyncio.coroutine
     def update_async(self, <#=entity.Name.ToUnderscore()#>):
         """Updates the specified <#=entityName#>.
         :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to update.
         :type: <#=entityName#>
         :returns: The updated <#=entityName#>.
         :rtype: <#=entityName#>"""
-        self._content_type = "<#=jsonContentType#>"
-        self._method = "PATCH"
-        entity = this.send_async(<#=entity.Name.ToUnderscore()#>);
+        self.content_type = "<#=jsonContentType#>"
+        self.method = "PATCH"
+        entity = self.send_async(<#=entity.Name.ToUnderscore()#>)
         # this.InitializeCollectionProperties(entity); see previous
         return entity;
 
-    @abc.abstractmethod
     def expand(self, value):
         """Adds the specified expand value to the request.
         :param value: The expand value.
@@ -80,7 +91,6 @@ class <#=entityRequest#>(RequestBase, <#=entityRequest#>Base)
         self._query_options["expand"] = value
         return self
 
-@abc.abstractmethod
     def select(self, value):
         """Adds the specified select value to the request.
         :param value: The select value.
@@ -90,7 +100,6 @@ class <#=entityRequest#>(RequestBase, <#=entityRequest#>Base)
         self._query_options["select"] = value
         return self
     
-    @abc.abstractmethod
     def top(self, value):
         """Adds the specified select top to the request.
         :param value: The top value.
@@ -100,6 +109,28 @@ class <#=entityRequest#>(RequestBase, <#=entityRequest#>Base)
         self._query_options["top"] = value
         return self
 
+    def _initialize_collection_properties(self, value):
+<#
+        var collectionProperties = entity.Properties.Where(property => property.IsCollection() && property.Type.IsComplex());
+
+        if (collectionProperties.Any())
+        {
+#>
+        if value and value.additional_data:
+<#
+            foreach(var property in collectionProperties)
+            {
+                var propertyName = property.Name.ToUnderscore();
+                var propertyType = property.GetTypeString();
+#>
+            if value.<#=propertyName#> and value.<#=propertyName#>.current_page:
+                next_page_link = value.additional_data["<#=propertyName.ToLowerFirstChar()#>@odata.nextLink"]
+                if next_page_link:
+                    value.<#=propertyName#>.initialize_next_page_request(self.client, next_page_link)
+<#
+            }
+        }
+#>
     """
     This is all for collections... look into at a later time
     

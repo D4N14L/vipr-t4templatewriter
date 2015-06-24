@@ -8,27 +8,70 @@ OdcmClass complex = (OdcmClass)host.CurrentType;
 #>
 <#=writer.WriteHeader()#>
 
-class <#=complex.Name.ToUpperFirstChar()#>:
-    
-    <# 
+<# 
+    List<String> list = new List<String>();
+    foreach(var property in complex.Properties){
+        var propertyName = property.Name.ToUnderscore();
+        if (property.Type.IsComplex() 
+            && !list.Contains(property.Type.GetTypeString()) 
+            && !property.Type.GetTypeString().Equals(complex.Name.ToUpperFirstChar())) {
+            list.Add(property.Type.GetTypeString());
+#>
+from ..Models.<#=property.Type.GetTypeString().ToUnderscore()#> import <#=property.Type.GetTypeString()#>
+<#
+        }
+    }
+#>
+
+class <#=complex.Name.ToUpperFirstChar()#>(object):
+
+    def __init__(self, prop_dict={}):
+        self._prop_dict = prop_dict
+
+<# 
         foreach(var property in complex.Properties){
             var propertyName = property.Name.ToUnderscore();
-    #>
-
+            if (!property.Type.IsComplex()) {
+#>
     @property
     def <#=propertyName#>(self):
         """Gets <#=property.Name#> """
-        return self._<#=propertyName#>
+        if "<#=property.Name#>" in self._prop_dict:
+            return self._prop_dict["<#=property.Name#>"]
+        else:
+            return None
 
     @<#=propertyName#>.setter
     def <#=propertyName#>(self, val):
         """Sets <#=property.Name#> """
-        self._<#=propertyName#> = val
+        if not isinstance(val, <#=property.Type.GetTypeString()#>) and val is not None:
+            raise TypeError(
+                'Type provided is not of type ' + type(val).__name__)
+        self._prop_dict["<#=property.Name#>"] = val
 
-    <#
+<#
+        } else {
+#>
+    @property
+    def <#=propertyName#>(self):
+        """Gets <#=property.Name#> """
+        if "<#=property.Name#>" in self._prop_dict:
+            return <#=property.Type.GetTypeString()#>(self._prop_dict["<#=property.Name#>"])
+        else:
+            return None
+
+    @<#=propertyName#>.setter
+    def <#=propertyName#>(self, val):
+        """Sets <#=property.Name#> """
+        if not isinstance(val, <#=property.Type.GetTypeString()#>) and val is not None:
+            raise TypeError(
+                'Type provided is not of type ' + type(val).__name__)
+        self._prop_dict["<#=property.Name#>"] = val._prop_dict
+
+<#
+        }
     }
-    #>
-
+#>
     @property
     def additional_data(self):
         """Gets additional data dictionary"""
@@ -37,4 +80,7 @@ class <#=complex.Name.ToUpperFirstChar()#>:
     @additional_data.setter
     def additional_data(self, val):
         """Sets additional data dictionary"""
+        if type(val).__name__ != "dict":
+            raise TypeError(
+                'Type provided is not of type dict')
         self._additional_data = val
