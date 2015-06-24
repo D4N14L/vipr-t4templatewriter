@@ -16,7 +16,7 @@ namespace Vipr.T4TemplateWriter.Output {
             var theNamespace = CreateNamespace(template.TemplateType.ToString().ToLower());
             var namespacePath = CreatePathFromNamespace(theNamespace);
 
-            var fileName = TransformFileName(template, entityTypeName);
+            var fileName = Extensions.StringExtensions.ToUnderscore(TransformFileName(template, entityTypeName)).ToLower();
 
             String filePath = Path.Combine(namespacePath, fileName);
             return filePath;
