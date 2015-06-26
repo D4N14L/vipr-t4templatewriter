@@ -77,11 +77,7 @@
     <None Include=".config\TemplateWriterSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Templates\Python\Fetcher\EntityCollectionPage.py.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Templates\Python\Fetcher\EntityCollectionRequest.py.tt">
+    <None Include="Templates\Python\Fetcher\EntityCollection.py.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

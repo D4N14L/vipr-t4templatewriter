@@ -26,8 +26,7 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
         EntityRequest, //added
         EntityRequestBuilderBase, //added
         EntityRequestBuilder, //added
-        EntityCollectionPage, //added
-        EntityCollectionRequest, //added
+        EntityCollection, //added
         EntityOperations,
         EntityCollectionFetcher,
         EntityCollectionOperations,
@@ -74,11 +73,7 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
                 {FileType.EntityRequestBuilder,         ProcessEntityTypes}, //added
                 {FileType.EntityRequestBase,            ProcessEntityTypes}, //added
                 {FileType.EntityRequestBuilderBase,     ProcessEntityTypes}, //added
-                {FileType.EntityCollectionPage,                  ProcessCollectionProperties},
-                {FileType.EntityCollectionRequest,               ProcessCollectionProperties},
-                //{FileType.EntityCollectionRequestBuilder,        ProcessCollectionProperties},
-                //{FileType.EntityCollectionResponse,              ProcessCollectionProperties},
-                //{FileType.EntityCollectionPage,         ProcessEntityTypes},
+                {FileType.EntityCollection,                  ProcessCollectionProperties}, //added
                 {FileType.EntityOperations,             ProcessEntityTypes},
 
                 // EntityContainer

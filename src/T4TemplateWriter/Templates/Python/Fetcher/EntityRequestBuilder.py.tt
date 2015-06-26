@@ -14,6 +14,15 @@ var jsonContentType     = "application/json";
 
 from .<#=entityRequest.ToUnderscore()#> import <#=entityRequest#>
 from ..request_builder_base import RequestBuilderBase
+<#
+foreach (var prop in entity.NavigationProperties()){
+    var propCollection = prop.Name.ToUpperFirstChar() + "Collection";
+    var propCollectionRequestBuilder = (propCollection + "RequestBuilder");
+#>
+from ..Requests.<#=propCollection.ToUnderscore()#> import <#=propCollectionRequestBuilder#>
+<#
+}
+#>
 
 class <#=entityBuilder#>(RequestBuilderBase):
 
@@ -42,7 +51,12 @@ class <#=entityBuilder#>(RequestBuilderBase):
     
         if(prop.IsCollection())
         {
-            //TODO: collections
+            var collectionRequestBuilder = prop.Name.ToUpperFirstChar() + "CollectionRequestBuilder";
+#>
+    @property
+    def <#=propName#>(self):
+        return <#=collectionRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
+<#
         }
         else
         {

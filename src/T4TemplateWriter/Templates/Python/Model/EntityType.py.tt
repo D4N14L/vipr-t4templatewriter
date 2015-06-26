@@ -99,12 +99,4 @@ class <#=entity.Name.ToUpperFirstChar()#>(object):
     @property
     def additional_data(self):
         """Gets additional data dictionary"""
-        return self._additional_data
-
-    @additional_data.setter
-    def additional_data(self, val):
-        """Sets additional data dictionary"""
-        if type(val).__name__ != "dict":
-            raise TypeError(
-                'Type provided is not of type dict')
-        self._additional_data = val
+        return self._prop_dict

@@ -54,8 +54,8 @@ class <#=entityRequest#>(RequestBase):
         :returns: The <#=entityName#>.
         :rtype: <#=entityName#>"""
         self.method = "GET"
-        entity = <#=entityName#>(self.send()) #old was send_async(null).. take this into account
-        # this.InitializeCollectionProperties(entity); see previous
+        entity = <#=entityName#>(self.send())
+        self._initialize_collection_properties(entity);
         return entity
 
     @asyncio.coroutine
@@ -109,13 +109,13 @@ class <#=entityRequest#>(RequestBase):
         self._query_options["top"] = value
         return self
 
-    def _initialize_collection_properties(self, value):
 <#
         var collectionProperties = entity.Properties.Where(property => property.IsCollection() && property.Type.IsComplex());
 
         if (collectionProperties.Any())
         {
 #>
+    def _initialize_collection_properties(self, value):
         if value and value.additional_data:
 <#
             foreach(var property in collectionProperties)
@@ -131,9 +131,10 @@ class <#=entityRequest#>(RequestBase):
             }
         }
 #>
-    """
-    This is all for collections... look into at a later time
-    
-    Gina has a working copy at
-    vipr-t4templatewriter-pr/src/T4TemplateWriter/Templates/T4/CSharp/odata/EntityRequest.tt
-    """
+        """
+        This is all for collections... look into at a later time
+        
+        Gina has a working copy at
+        vipr-t4templatewriter-pr/src/T4TemplateWriter/Templates/T4/CSharp/odata/EntityRequest.tt
+        """
+        pass
