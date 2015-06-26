@@ -38,14 +38,14 @@ class <#=collectionRequest#>(RequestBase):
     def add(self, entity):
         self.content_type = "<#=jsonContentType#>"
         self.method = "POST"
-        entity = <#=innerEntityType#>(self.send())
+        entity = <#=innerEntityType#>(self.send(entity))
         return entity
 
     @asyncio.coroutine
     def add_async(self, entity):
         self.content_type = "<#=jsonContentType#>"
         self.method = "POST"
-        entity_response = yield from self.send_async()
+        entity_response = yield from self.send_async(entity)
         entity = <#=innerEntityType#>(entity_response)
         return entity
 

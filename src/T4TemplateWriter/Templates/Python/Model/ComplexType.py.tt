@@ -46,7 +46,7 @@ class <#=complex.Name.ToUpperFirstChar()#>(object):
         """Sets <#=property.Name#> """
         if not isinstance(val, <#=property.Type.GetTypeString()#>) and val is not None:
             raise TypeError(
-                'Type provided is not of type ' + type(val).__name__)
+                'Type provided is not of type ' + <#=property.Type.GetTypeString()#>.__name__)
         self._prop_dict["<#=property.Name#>"] = val
 
 <#
@@ -65,7 +65,7 @@ class <#=complex.Name.ToUpperFirstChar()#>(object):
         """Sets <#=property.Name#> """
         if not isinstance(val, <#=property.Type.GetTypeString()#>) and val is not None:
             raise TypeError(
-                'Type provided is not of type ' + type(val).__name__)
+                'Type provided is not of type ' + <#=property.Type.GetTypeString()#>.__name__)
         self._prop_dict["<#=property.Name#>"] = val._prop_dict
 
 <#

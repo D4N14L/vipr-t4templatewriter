@@ -23,7 +23,7 @@ namespace Vipr.T4TemplateWriter.Output {
         protected virtual string TransformFileName(TemplateFileInfo template, String entityTypeName) {
             String result;
 
-            if (template.TemplateType == TemplateType.Fetcher) {
+            if (template.TemplateType == TemplateType.Fetcher && template.TemplateName.Contains("Entity")) {
                 result = template.TemplateName.Replace("Entity", entityTypeName);
             } else {
                 result = String.Format("{0}.{1}", entityTypeName, template.FileExtension);

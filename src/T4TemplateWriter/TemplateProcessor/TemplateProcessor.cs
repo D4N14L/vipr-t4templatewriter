@@ -27,6 +27,8 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
         EntityRequestBuilderBase, //added
         EntityRequestBuilder, //added
         EntityCollection, //added
+        Stream, //added
+        Method, //added
         EntityOperations,
         EntityCollectionFetcher,
         EntityCollectionOperations,
@@ -73,7 +75,9 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
                 {FileType.EntityRequestBuilder,         ProcessEntityTypes}, //added
                 {FileType.EntityRequestBase,            ProcessEntityTypes}, //added
                 {FileType.EntityRequestBuilderBase,     ProcessEntityTypes}, //added
-                {FileType.EntityCollection,                  ProcessCollectionProperties}, //added
+                {FileType.EntityCollection,             ProcessCollectionProperties}, //added
+                {FileType.Method,                 ProcessMethodTypes},         
+                //{FileType.Stream,                       ProcessStreamProperties}     
                 {FileType.EntityOperations,             ProcessEntityTypes},
 
                 // EntityContainer
@@ -155,11 +159,34 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
             }
         }
 
+        public IEnumerable<TextFile> ProcessMethodTypes(TemplateFileInfo templateInfo)
+        {
+            var methods = CurrentModel.GetEntityTypes()
+                .SelectMany(et => et.Methods);
+
+            foreach (OdcmMethod method in methods)
+            {
+                string templateName = templateInfo.TemplateBaseName.Replace(
+                    "Method",
+                    method.Class.Name.ToUpperFirstChar() +
+                        method.Name.Substring(method.Name.IndexOf('.') + 1).ToUpperFirstChar());
+                yield return ProcessTemplate(templateInfo, method, templateName);
+            }
+        }
+
+        /*
+        public IEnumerable<TextFile> ProcessStreamProperties(TemplateFileInfo templateInfo)
+        {
+            var streamProperties = CurrentModel.GetEntityTypes()
+                .SelectMany(et => et.Properties)
+        }
+        */
+
         protected IEnumerable<TextFile> ProcessTemplate(TemplateFileInfo templateInfo) {
             yield return this.ProcessTemplate(templateInfo, null);
         }
 
-        protected TextFile ProcessTemplate(TemplateFileInfo templateInfo, OdcmObject odcmObject) {
+        protected TextFile ProcessTemplate(TemplateFileInfo templateInfo, OdcmObject odcmObject, String fileName = null) {
             var host = TemplateProcessor.Host(templateInfo, this.TemplatesDirectory, odcmObject, this.CurrentModel);
 
             var templateContent = File.ReadAllText(host.TemplateFile);
@@ -171,7 +198,10 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
                 throw new InvalidOperationException(errors);
             }
 
-            String fileName = (odcmObject != null) ? odcmObject.Name.ToUpperFirstChar() : templateInfo.TemplateBaseName.ToUpperFirstChar();
+            if (fileName == null) {
+                fileName = (odcmObject != null) ? odcmObject.Name.ToUpperFirstChar() : templateInfo.TemplateBaseName.ToUpperFirstChar();
+            }
+
             var path = this.PathWriter.WritePath(templateInfo, fileName);
 
             return new TextFile(path, output);

@@ -1,0 +1,18 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension="\\" #>
+<#
+CustomT4Host host       = (CustomT4Host) Host;
+OdcmModel model         = host.CurrentModel;
+CodeWriterPython writer = (CodeWriterPython) host.CodeWriter;
+var clientName          = model.GetEntityContainer().ToUpperFirstChar() + "Client";
+var clientNameLower     = clientName.ToLowerFirstChar();
+var method              = host.CurrentType as OdcmMethod;
+var entityName          = method.Class.Name.ToUpperFirstChar();
+var httpMethod          = method.IsAction ? "POST" : "GET";
+var requestType         = entityName + method.Name.Substring(method.Name.IndexOf('.') + 1).ToUpperFirstChar() + "Request";
+var returnType          = method.ReturnType.Name.ToUpperFirstChar();
+bool hasParameters      = method.Parameters != null && method.Parameters.Any();
+TemplateWriterSettings settings = ConfigurationService.Settings;
+
+#>
+<#=writer.WriteHeader()#>

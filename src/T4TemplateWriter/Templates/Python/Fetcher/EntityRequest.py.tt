@@ -43,11 +43,16 @@ class <#=entityRequest#>(RequestBase):
         # self.InitializeCollectionProperties(entity); this must be done, for paging, but not yet
         return entity
 
+    def delete(self):
+        """Deletes the specified <#=entityName#>."""
+        self.method = "DELETE"
+        self.send()
+
     @asyncio.coroutine
     def delete_async(self):
         """Deletes the specified <#=entityName#>."""
         self.method = "DELETE"
-        self.send_async() #old was send_async(null).. take this into account
+        self.send_async()
 
     def get(self):
         """Gets the specified <#=entityName#>.
@@ -55,7 +60,7 @@ class <#=entityRequest#>(RequestBase):
         :rtype: <#=entityName#>"""
         self.method = "GET"
         entity = <#=entityName#>(self.send())
-        self._initialize_collection_properties(entity);
+        self._initialize_collection_properties(entity)
         return entity
 
     @asyncio.coroutine
@@ -64,10 +69,20 @@ class <#=entityRequest#>(RequestBase):
         :returns: The <#=entityName#>.
         :rtype: <#=entityName#>"""
         self.method = "GET"
-        entity_response = yield from self.send_async() #old was send_async(null).. take this into account
+        entity_response = yield from self.send_async()
         entity = <#=entityName#>(entity_response)
-        # this.InitializeCollectionProperties(entity); see previous
+        self._initialize_collection_properties(entity)
         return entity
+
+    def update(self, item):
+        """Updates the specified <#=entityName#>.
+        :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to update.
+        :type: <#=entityName#>
+        :returns: The updated <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        self.content_type = "application/json"
+        self.method = "PATCH"
+        return Item(self.send(item))
 
     @asyncio.coroutine
     def update_async(self, <#=entity.Name.ToUnderscore()#>):
@@ -79,7 +94,7 @@ class <#=entityRequest#>(RequestBase):
         self.content_type = "<#=jsonContentType#>"
         self.method = "PATCH"
         entity = self.send_async(<#=entity.Name.ToUnderscore()#>)
-        # this.InitializeCollectionProperties(entity); see previous
+        self._initialize_collection_properties(entity)
         return entity;
 
     def expand(self, value):
@@ -131,10 +146,3 @@ class <#=entityRequest#>(RequestBase):
             }
         }
 #>
-        """
-        This is all for collections... look into at a later time
-        
-        Gina has a working copy at
-        vipr-t4templatewriter-pr/src/T4TemplateWriter/Templates/T4/CSharp/odata/EntityRequest.tt
-        """
-        pass
