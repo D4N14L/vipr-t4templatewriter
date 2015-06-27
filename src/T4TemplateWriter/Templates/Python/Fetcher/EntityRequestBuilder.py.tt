@@ -22,6 +22,13 @@ foreach (var prop in entity.NavigationProperties()){
 from ..Requests.<#=propCollection.ToUnderscore()#> import <#=propCollectionRequestBuilder#>
 <#
 }
+foreach (var method in entity.Methods){
+    var methodName = method.Name.Substring(method.Name.IndexOf('.') + 1);
+    var baseName = method.Class.Name.ToUpperFirstChar() + methodName.ToUpperFirstChar();
+#>
+from ..Requests.<#=baseName.ToUnderscore()#> import <#=baseName#>RequestBuilder
+<#
+}
 #>
 
 class <#=entityBuilder#>(RequestBuilderBase):
@@ -68,5 +75,35 @@ class <#=entityBuilder#>(RequestBuilderBase):
 <#
         }
     }
-    //TODO: Stream, methods
+    foreach(var method in entity.Methods) {
+        var methodName = method.Name.Substring(method.Name.IndexOf('.') + 1);
+        var baseName = method.Class.Name.ToUpperFirstChar() + methodName.ToUpperFirstChar();
+
+        var paramStringBuilder = new System.Text.StringBuilder();
+        var builderInitializerBuilder = new System.Text.StringBuilder();
+
+        paramStringBuilder.Append("self");
+
+        builderInitializerBuilder.Append("self.append_to_request_url(\""+method.Name+"\"), ");
+        builderInitializerBuilder.Append("self.client");
+
+        if (method.Parameters != null && method.Parameters.Any()){
+            foreach (var param in method.Parameters){
+                paramStringBuilder.Append(", " + param.Name.ToUnderscore());
+                builderInitializerBuilder.Append(", " + param.Name.ToUnderscore());
+            }
+        }
+#>
+
+    def <#=baseName.ToUnderscore()#>(<#=paramStringBuilder.ToString()#>):
+        return <#=baseName#>RequestBuilder(<#=builderInitializerBuilder.ToString()#>)
+<#
+    
+
+
+
+    //TODO: Stream
+    }
+
+
 #>

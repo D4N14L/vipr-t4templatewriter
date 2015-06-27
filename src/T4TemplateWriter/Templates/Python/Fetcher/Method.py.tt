@@ -10,9 +10,158 @@ var method              = host.CurrentType as OdcmMethod;
 var entityName          = method.Class.Name.ToUpperFirstChar();
 var httpMethod          = method.IsAction ? "POST" : "GET";
 var requestType         = entityName + method.Name.Substring(method.Name.IndexOf('.') + 1).ToUpperFirstChar() + "Request";
+var requestBuilderType  = requestType + "Builder";
 var returnType          = method.ReturnType.Name.ToUpperFirstChar();
 bool hasParameters      = method.Parameters != null && method.Parameters.Any();
 TemplateWriterSettings settings = ConfigurationService.Settings;
 
 #>
 <#=writer.WriteHeader()#>
+
+from ..Models.<#=returnType.ToUnderscore()#> import <#=returnType#>
+from ..request_base import RequestBase
+from ..request_builder_base import RequestBuilderBase
+from ..options import *
+import asyncio
+
+class <#=requestType#>(RequestBase):
+<#
+    var paramStringBuilder = new System.Text.StringBuilder();
+    var requestBodyInitializerBuilder = new System.Text.StringBuilder();
+    paramStringBuilder.Append("self, request_url, client, options");
+
+    foreach (var param in method.Parameters){
+        paramStringBuilder.Append(", " + param.Name.ToUnderscore() + "=None");
+        requestBodyInitializerBuilder.Append("        ");
+        requestBodyInitializerBuilder.Append(method.IsAction ? "self.body_options" : "self._query_options");
+        requestBodyInitializerBuilder.Append("[\""+param.Name+"\"]");
+        requestBodyInitializerBuilder.Append(" = "+param.Name.ToUnderscore());
+        requestBodyInitializerBuilder.Append(Environment.NewLine);
+    }
+
+#>
+    def __init__(<#=paramStringBuilder.ToString()#>):
+        super(<#=requestType#>, self).__init__(request_url, client, options)
+        self.method = "<#=httpMethod#>";
+<#
+        if (method.IsAction) {
+#>
+        self.body_options={}
+<#
+    }
+    if (hasParameters) {
+#>
+<#=requestBodyInitializerBuilder.ToString()#>
+<#
+    }
+    if (method.IsAction) {
+#>
+    @property
+    def body_options(self):
+        return self._body_options
+    
+    @body_options.setter
+    def body_options(self, value):
+        self._body_options=value
+<#
+    }
+    if (hasParameters && method.IsAction){
+#>
+
+    def <#=httpMethod.ToLower()#>(self):
+        self.content_type = "application/json"
+        entity = <#=returnType#>(self.send(self.body_options))
+        return entity
+
+    @asyncio.coroutine
+    def <#=httpMethod.ToLower()#>_async(self):
+        self.content_type = "application/json"
+        entity_response = yield from self.send_async(self.body_options)
+        entity = <#=returnType#>(entity_response)
+        return entity
+<#
+    } else {
+#>
+
+    def <#=httpMethod.ToLower()#>(self):
+        entity = <#=returnType#>(self.send())
+        return entity
+
+    @asyncio.coroutine
+    def <#=httpMethod.ToLower()#>_async(self):
+        entity_response = yield from self.send_async()
+        entity = <#=returnType#>(entity_response)
+        return entity
+<#
+    }
+#>
+
+    def expand(self, value):
+        self._query_options["expand"] = value
+        return self
+
+    def select(self, value):
+        self._query_options["select"] = value
+        return self
+    
+    def top(self, value):
+        self._query_options["top"] = value
+        return self
+
+class <#=requestBuilderType#>(RequestBuilderBase):
+<#
+    paramStringBuilder = new System.Text.StringBuilder();
+    var requestBuilderInitializerBuilder = new System.Text.StringBuilder();
+    var requestConstructorBuilder = new System.Text.StringBuilder();
+
+    requestConstructorBuilder.Append("self.request_url, self.client, options");
+    paramStringBuilder.Append("self, request_url, client");
+
+    foreach (var param in method.Parameters){
+        requestConstructorBuilder.Append(", self.method_options[\""+param.Name+"\"]");
+        paramStringBuilder.Append(", " + param.Name.ToUnderscore() + "=None");
+        requestBuilderInitializerBuilder.Append("        ");
+        requestBuilderInitializerBuilder.Append(param.Name.ToUnderscore()+"_content = None");
+        requestBuilderInitializerBuilder.Append(Environment.NewLine);
+        requestBuilderInitializerBuilder.Append("        ");
+        requestBuilderInitializerBuilder.Append("if "+param.Name.ToUnderscore()+" is not None:");
+        requestBuilderInitializerBuilder.Append(Environment.NewLine);
+        requestBuilderInitializerBuilder.Append("            ");
+        requestBuilderInitializerBuilder.Append(param.Name.ToUnderscore()+"_content = "+param.Name.ToUnderscore()+" if isinstance("+param.Name.ToUnderscore()+", str) else "+param.Name.ToUnderscore()+"._prop_dict");
+        requestBuilderInitializerBuilder.Append(Environment.NewLine);
+        requestBuilderInitializerBuilder.Append("        ");
+        requestBuilderInitializerBuilder.Append("self.method_options");
+        requestBuilderInitializerBuilder.Append("[\""+param.Name+"\"]");
+        requestBuilderInitializerBuilder.Append(" = "+param.Name.ToUnderscore()+"_content");
+        requestBuilderInitializerBuilder.Append(Environment.NewLine);
+    }
+#>
+
+    def __init__(<#=paramStringBuilder.ToString()#>):
+        super(<#=requestBuilderType#>, self).__init__(request_url, client)
+<#
+    if (hasParameters) {
+#>
+        self.method_options = {}
+<#=requestBuilderInitializerBuilder.ToString()#>
+<#
+    }
+#>
+
+    def request(self, options=None):
+        return <#=requestType#>(<#=requestConstructorBuilder#>)
+
+<#
+    if (hasParameters) {
+#>
+    @property
+    def method_options(self):
+        return self._method_options
+    
+    @method_options.setter
+    def method_options(self, value):
+        self._method_options=value
+
+<#
+    }
+#>
