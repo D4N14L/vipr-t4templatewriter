@@ -23,6 +23,13 @@ namespace Vipr.T4TemplateWriter
                 : false;
         }
 
+        public static bool IsMethodAsync(this OdcmMethod odcmMethod)
+        {
+            return odcmMethod.LongDescription != null
+                ? odcmMethod.LongDescription.Contains("async")
+                : false;
+        }
+
 
         private static OdcmNamespace GetOdcmNamespace(OdcmModel model)
         {
