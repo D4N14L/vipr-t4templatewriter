@@ -14,6 +14,7 @@ var jsonContentType     = "application/json";
 from ..request_base import RequestBase
 from ..Models.<#=entity.Name.ToUnderscore()#> import <#=entityName#>
 import asyncio
+import json
 
 class <#=entityRequest#>(RequestBase):
     """The type <#=entityRequest#>."""
@@ -59,7 +60,7 @@ class <#=entityRequest#>(RequestBase):
         :returns: The <#=entityName#>.
         :rtype: <#=entityName#>"""
         self.method = "GET"
-        entity = <#=entityName#>(self.send())
+        entity = <#=entityName#>(json.loads(self.send().content))
         self._initialize_collection_properties(entity)
         return entity
 
@@ -70,7 +71,7 @@ class <#=entityRequest#>(RequestBase):
         :rtype: <#=entityName#>"""
         self.method = "GET"
         entity_response = yield from self.send_async()
-        entity = <#=entityName#>(entity_response)
+        entity = <#=entityName#>(json.loads(entity_response.content))
         self._initialize_collection_properties(entity)
         return entity
 
@@ -82,7 +83,7 @@ class <#=entityRequest#>(RequestBase):
         :rtype: <#=entityName#>"""
         self.content_type = "application/json"
         self.method = "PATCH"
-        return Item(self.send(item))
+        return Item(json.loads(self.send(item).content))
 
     @asyncio.coroutine
     def update_async(self, <#=entity.Name.ToUnderscore()#>):
@@ -93,7 +94,7 @@ class <#=entityRequest#>(RequestBase):
         :rtype: <#=entityName#>"""
         self.content_type = "<#=jsonContentType#>"
         self.method = "PATCH"
-        entity = self.send_async(<#=entity.Name.ToUnderscore()#>)
+        entity = <#=entityName#>(json.loads(self.send_async(<#=entity.Name.ToUnderscore()#>).content))
         self._initialize_collection_properties(entity)
         return entity;
 

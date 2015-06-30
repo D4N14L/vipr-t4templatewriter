@@ -21,8 +21,16 @@ TemplateWriterSettings settings = ConfigurationService.Settings;
 from ..Models.<#=returnType.ToUnderscore()#> import <#=returnType#>
 from ..request_base import RequestBase
 from ..request_builder_base import RequestBuilderBase
+<#
+if (method.IsMethodAsync()){
+#>
+from ..async_operation import AsyncOperation
+<#
+}
+#>
 from ..options import *
 import asyncio
+import json
 
 class <#=requestType#>(RequestBase):
 <#
@@ -70,27 +78,85 @@ class <#=requestType#>(RequestBase):
 
     def <#=httpMethod.ToLower()#>(self):
         self.content_type = "application/json"
-        entity = <#=returnType#>(self.send(self.body_options))
+<#
+        if (method.IsMethodAsync()){
+#>
+        self.headers["Prefer"] = "respond-async"
+        entity_response = self.send(self.body_options)
+        entity = AsyncOperation(entity_response.headers["Location"], self.client, None)
+<#
+        } else {
+#>
+        entity = <#=returnType#>(json.loads(self.send(self.body_options).content))
+<#
+        }
+#>
         return entity
 
     @asyncio.coroutine
     def <#=httpMethod.ToLower()#>_async(self):
+<#
+        if (method.IsMethodAsync()){
+#>
+        self.headers["Prefer"] = "respond-async"
+<#
+        }
+#>
         self.content_type = "application/json"
         entity_response = yield from self.send_async(self.body_options)
-        entity = <#=returnType#>(entity_response)
+<#
+        if (method.IsMethodAsync()){
+#>
+        entity = AsyncOperation(entity_response.headers["Location"], self.client, None)
+<#
+        } else {
+#>
+        entity = <#=returnType#>(json.loads(entity_response.content))
+<#
+        }
+#>
         return entity
 <#
     } else {
 #>
 
     def <#=httpMethod.ToLower()#>(self):
-        entity = <#=returnType#>(self.send())
+<#
+        if (method.IsMethodAsync()){
+#>
+        self.headers["Prefer"] = "respond-async"
+        entity_response = self.send()
+        entity = AsyncOperation(entity_response.headers["Location"], self.client, None)
+<#
+        } else {
+#>
+        entity = <#=returnType#>(json.loads(self.send().content))
+<#
+        }
+#>
         return entity
 
     @asyncio.coroutine
     def <#=httpMethod.ToLower()#>_async(self):
+<#
+        if (method.IsMethodAsync()){
+#>
+        self.headers["Prefer"] = "respond-async"
+<#
+        }
+#>
         entity_response = yield from self.send_async()
-        entity = <#=returnType#>(entity_response)
+<#
+        if (method.IsMethodAsync()){
+#>
+        entity = AsyncOperation(entity_response.headers["Location"], self.client, None)
+<#
+        } else {
+#>
+        entity = <#=returnType#>(json.loads(entity_response.content))
+<#
+        }
+#>
         return entity
 <#
     }

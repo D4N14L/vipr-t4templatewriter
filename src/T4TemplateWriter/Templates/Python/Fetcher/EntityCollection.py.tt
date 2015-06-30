@@ -26,6 +26,7 @@ from ..Requests.<#=innerEntityRequestBuilder.ToUnderscore()#> import <#=innerEnt
 from ..Models.collection_page import CollectionPage
 from ..Models.<#=innerEntityType.ToUnderscore()#> import <#=innerEntityType#>
 import asyncio
+import json
 
 class <#=collectionRequest#>(RequestBase):
     
@@ -38,7 +39,7 @@ class <#=collectionRequest#>(RequestBase):
     def add(self, entity):
         self.content_type = "<#=jsonContentType#>"
         self.method = "POST"
-        entity = <#=innerEntityType#>(self.send(entity))
+        entity = <#=innerEntityType#>(json.loads(self.send(entity).content))
         return entity
 
     @asyncio.coroutine
@@ -46,7 +47,7 @@ class <#=collectionRequest#>(RequestBase):
         self.content_type = "<#=jsonContentType#>"
         self.method = "POST"
         entity_response = yield from self.send_async(entity)
-        entity = <#=innerEntityType#>(entity_response)
+        entity = <#=innerEntityType#>(json.loads(entity_response.content))
         return entity
 
 <#
@@ -66,7 +67,7 @@ class <#=collectionRequest#>(RequestBase):
         """returns: The CollectionPage
         :rtype: <#=collectionPage#>"""
         self.method = "GET"
-        response = <#=collectionResponse#>(self.send())
+        response = <#=collectionResponse#>(json.loads(self.send().content))
         return self._parse_response(response)
 
     @asyncio.coroutine
@@ -74,9 +75,9 @@ class <#=collectionRequest#>(RequestBase):
         """returns: The CollectionPage
         :rtype: <#=collectionPage#>"""
         self.method = "GET"
-        response_json = yield from self.send_async()
-        response = <#=collectionResponse#>(response_json)
-        return self._parse_response(response)
+        response = yield from self.send_async()
+        response_collection = <#=collectionResponse#>(json.loads(response.content))
+        return self._parse_response(response_collection)
     
     def expand(self, value):
         """Adds the specified expand value to the request.
