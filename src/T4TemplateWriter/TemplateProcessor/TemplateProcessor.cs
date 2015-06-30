@@ -76,8 +76,8 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
                 {FileType.EntityRequestBase,            ProcessEntityTypes}, //added
                 {FileType.EntityRequestBuilderBase,     ProcessEntityTypes}, //added
                 {FileType.EntityCollection,             ProcessCollectionProperties}, //added
-                {FileType.Method,                 ProcessMethodTypes},         
-                //{FileType.Stream,                       ProcessStreamProperties}     
+                {FileType.Method,                       ProcessMethodTypes},         
+                {FileType.Stream,                       ProcessStreamProperties},     
                 {FileType.EntityOperations,             ProcessEntityTypes},
 
                 // EntityContainer
@@ -174,13 +174,21 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
             }
         }
 
-        /*
         public IEnumerable<TextFile> ProcessStreamProperties(TemplateFileInfo templateInfo)
         {
             var streamProperties = CurrentModel.GetEntityTypes()
                 .SelectMany(et => et.Properties)
+                .Where(prop => prop.IsStream);
+
+            foreach (OdcmProperty stream in streamProperties)
+            {
+                string templateName = templateInfo.TemplateBaseName.Replace(
+                    "Stream",
+                    stream.Class.Name.ToUpperFirstChar() + stream.Name.ToUpperFirstChar());
+                yield return ProcessTemplate(templateInfo, stream, templateName);
+            }
+
         }
-        */
 
         protected IEnumerable<TextFile> ProcessTemplate(TemplateFileInfo templateInfo) {
             yield return this.ProcessTemplate(templateInfo, null);

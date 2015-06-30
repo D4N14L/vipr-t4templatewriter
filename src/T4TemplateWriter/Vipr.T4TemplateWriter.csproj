@@ -93,6 +93,10 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Templates\Python\Fetcher\Stream.py.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Templates\Python\Model\ComplexType.py.tt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

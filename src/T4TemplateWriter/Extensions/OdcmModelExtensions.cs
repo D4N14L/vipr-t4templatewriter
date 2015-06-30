@@ -73,6 +73,11 @@ namespace Vipr.T4TemplateWriter
             return @namespace.Types.OfType<OdcmEnum>();
         }
 
+        public static IEnumerable<OdcmProperty> StreamProperties(this OdcmClass odcmClass)
+        {
+            return odcmClass.Properties.Where(p => p.IsStream);
+        }
+
         public static IEnumerable<OdcmProperty> NavigationProperties(this OdcmClass odcmClass)
         {
             return odcmClass.Properties.WhereIsNavigation();

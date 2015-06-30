@@ -1,0 +1,90 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension="\\" #>
+<#
+CustomT4Host host       = (CustomT4Host) Host;
+OdcmModel model         = host.CurrentModel;
+CodeWriterPython writer = (CodeWriterPython) host.CodeWriter;
+var prop                = host.CurrentType as OdcmProperty;
+var propName = prop.Name;
+var propClass = prop.Class.Name.ToUpperFirstChar();
+var propRequest = propClass + prop.Name.ToUpperFirstChar() + "Request";
+var propRequestBuilder = propClass + prop.Name.ToUpperFirstChar() + "RequestBuilder";
+TemplateWriterSettings settings = ConfigurationService.Settings;
+
+#>
+<#=writer.WriteHeader()#>
+
+import asyncio
+from ..request_base import RequestBase
+from ..request_builder_base import RequestBuilderBase
+from ..Models.<#=propClass.ToUnderscore()#> import <#=propClass#>
+
+class <#=propRequest#>(RequestBase):
+    def __init__(self, request_url, client, options):
+        super(<#=propRequest#>, self).__init__(request_url, client, options)
+
+    def put(self, <#=prop.Name.ToUnderscore()#>_local_path):
+        """Creates the specified <#=propClass#> using PUT
+
+        :param <#=prop.Name.ToUnderscore()#>: The <#=propClass#> to create.
+        :type <#=prop.Name.ToUnderscore()#>: <#=propClass#>
+        :returns: The created <#=propClass#>.
+        :rtype: <#=propClass#>."""
+        self.method = "PUT"
+        entity = <#=propClass#>(self.send(path=<#=prop.Name.ToUnderscore()#>_local_path))
+        return entity
+
+
+    @asyncio.coroutine
+    def put_async(self, <#=prop.Name.ToUnderscore()#>_local_path):
+        """Creates the specified <#=propClass#> using PUT
+
+        :param <#=prop.Name.ToUnderscore()#>: The <#=propClass#> to create.
+        :type <#=prop.Name.ToUnderscore()#>: <#=propClass#>
+        :returns: The created <#=propClass#>.
+        :rtype: <#=propClass#>."""
+        self.method = "PUT"
+        entity_response = yield from self.send_async(path=<#=prop.Name.ToUnderscore()#>_local_path)
+        entity = <#=propClass#>(entity_response) #note is this how I want to do the sending? old was awat this.send...
+        return entity
+
+    def download(self, <#=prop.Name.ToUnderscore()#>_local_path):
+        """Gets the specified <#=propClass#>.
+        :returns: The <#=propClass#>.
+        :rtype: <#=propClass#>"""
+        response_path = self.download(<#=prop.Name.ToUnderscore()#>_local_path)
+        return response_path
+
+    @asyncio.coroutine
+    def download_async(self, <#=prop.Name.ToUnderscore()#>_local_path):
+        """Gets the specified <#=propClass#>.
+        :returns: The <#=propClass#>.
+        :rtype: <#=propClass#>"""
+        response_path = yield from self.download_async(<#=prop.Name.ToUnderscore()#>_local_path) #old was send_async(null).. take this into account
+        return response_path
+
+    def expand(self, value):
+        """Adds the specified expand value to the request.
+        :param value: The expand value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=propRequest#>"""
+        self._query_options["expand"] = value
+        return self
+
+    def select(self, value):
+        """Adds the specified select value to the request.
+        :param value: The select value.
+        :type: str
+        :returns: The request object to send.
+        :rtype: <#=propRequest#>"""
+        self._query_options["select"] = value
+        return self
+
+class <#=propRequestBuilder#>(RequestBuilderBase):
+
+    def __init__(self, request_url, client):
+        super(<#=propRequestBuilder#>, self).__init__(request_url, client)
+
+    def request(self):
+        return <#=propRequest#>(self.request_url, self.client)

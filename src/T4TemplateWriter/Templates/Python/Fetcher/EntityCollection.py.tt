@@ -59,7 +59,7 @@ class <#=collectionRequest#>(RequestBase):
         if response and response.value:
             if "@odata.nextLink" in response.additional_data:
                 next_page_link = response.additional_data["@odata.nextLink"]
-                response.value.initialize_next_page_request(self.client, next_page_link)
+                return response.value.initialize_next_page_request(self.client, next_page_link)
             return response.value
         return None 
 
@@ -143,10 +143,15 @@ class <#=collectionPage#>(CollectionPage):
         while current < len(self._prop_list) :
             yield <#=innerEntityType#>(self._prop_list[current])
 
-    @property
-    def next_page_request(self):
-        return self._next_page_request
-
     def initialize_next_page_request(self, client, next_page_link):
         if next_page_link:
-            self._next_page_request = <#=collectionRequest#>(next_page_link, client, null)
+            self._next_page_request = <#=collectionRequest#>(next_page_link, client, None)
+            return self
+        return None
+
+    @property
+    def next_page_request(self):
+        try:
+            return self._next_page_request
+        except:
+            return None

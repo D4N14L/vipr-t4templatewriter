@@ -29,6 +29,14 @@ foreach (var method in entity.Methods){
 from ..Requests.<#=baseName.ToUnderscore()#> import <#=baseName#>RequestBuilder
 <#
 }
+foreach(var prop in entity.StreamProperties())
+    {
+        var propName = prop.Class.Name.ToUpperFirstChar()+prop.Name.ToUpperFirstChar();
+        var propRequestBuilder = propName+"RequestBuilder";
+#>
+from ..Requests.<#=propName.ToUnderscore()#> import <#=propRequestBuilder#>
+<#
+    }
 #>
 
 class <#=entityBuilder#>(RequestBuilderBase):
@@ -60,6 +68,7 @@ class <#=entityBuilder#>(RequestBuilderBase):
         {
             var collectionRequestBuilder = prop.Name.ToUpperFirstChar() + "CollectionRequestBuilder";
 #>
+
     @property
     def <#=propName#>(self):
         return <#=collectionRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
@@ -68,12 +77,24 @@ class <#=entityBuilder#>(RequestBuilderBase):
         else
         {
 #>
+
     @property
     def <#=propName#>(self):
         return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
 
 <#
         }
+    }
+    foreach(var prop in entity.StreamProperties())
+    {
+        var propName = prop.Name.ToUnderscore();
+        var propRequestBuilder = prop.Class.Name.ToUpperFirstChar()+prop.Name.ToUpperFirstChar()+"RequestBuilder";
+#>
+
+    @property
+    def <#=propName#>(self):
+        return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
+<#
     }
     foreach(var method in entity.Methods) {
         var methodName = method.Name.Substring(method.Name.IndexOf('.') + 1);
@@ -98,11 +119,6 @@ class <#=entityBuilder#>(RequestBuilderBase):
     def <#=baseName.ToUnderscore()#>(<#=paramStringBuilder.ToString()#>):
         return <#=baseName#>RequestBuilder(<#=builderInitializerBuilder.ToString()#>)
 <#
-    
-
-
-
-    //TODO: Stream
     }
 
 
