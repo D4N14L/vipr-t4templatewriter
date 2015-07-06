@@ -15,13 +15,6 @@ var jsonContentType     = "application/json";
 from .<#=entityRequest.ToUnderscore()#> import <#=entityRequest#>
 from ..request_builder_base import RequestBuilderBase
 <#
-foreach (var prop in entity.NavigationProperties()){
-    var propCollection = prop.Name.ToUpperFirstChar() + "Collection";
-    var propCollectionRequestBuilder = (propCollection + "RequestBuilder");
-#>
-from ..Requests.<#=propCollection.ToUnderscore()#> import <#=propCollectionRequestBuilder#>
-<#
-}
 foreach (var method in entity.Methods){
     var methodName = method.Name.Substring(method.Name.IndexOf('.') + 1);
     var baseName = method.Class.Name.ToUpperFirstChar() + methodName.ToUpperFirstChar();
@@ -118,8 +111,14 @@ class <#=entityBuilder#>(RequestBuilderBase):
 
     def <#=baseName.ToUnderscore()#>(<#=paramStringBuilder.ToString()#>):
         return <#=baseName#>RequestBuilder(<#=builderInitializerBuilder.ToString()#>)
+
 <#
     }
-
-
+foreach (var prop in entity.NavigationProperties()){
+    var propCollection = prop.Name.ToUpperFirstChar() + "Collection";
+    var propCollectionRequestBuilder = (propCollection + "RequestBuilder");
+#>
+from ..Requests.<#=propCollection.ToUnderscore()#> import <#=propCollectionRequestBuilder#>
+<#
+}
 #>

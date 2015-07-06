@@ -52,7 +52,7 @@ class <#=propRequest#>(RequestBase):
         """Gets the specified <#=propClass#>.
         :returns: The <#=propClass#>.
         :rtype: <#=propClass#>"""
-        response_path = self.download(<#=prop.Name.ToUnderscore()#>_local_path)
+        response_path = self.download_item(<#=prop.Name.ToUnderscore()#>_local_path)
         return response_path
 
     @asyncio.coroutine
@@ -60,7 +60,7 @@ class <#=propRequest#>(RequestBase):
         """Gets the specified <#=propClass#>.
         :returns: The <#=propClass#>.
         :rtype: <#=propClass#>"""
-        response_path = yield from self.download_async(<#=prop.Name.ToUnderscore()#>_local_path) #old was send_async(null).. take this into account
+        response_path = yield from self.download_item_async(<#=prop.Name.ToUnderscore()#>_local_path) #old was send_async(null).. take this into account
         return response_path
 
     def expand(self, value):
@@ -87,4 +87,4 @@ class <#=propRequestBuilder#>(RequestBuilderBase):
         super(<#=propRequestBuilder#>, self).__init__(request_url, client)
 
     def request(self):
-        return <#=propRequest#>(self.request_url, self.client)
+        return <#=propRequest#>(self.request_url, self.client, None)
