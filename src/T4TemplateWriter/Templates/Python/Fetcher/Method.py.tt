@@ -239,7 +239,7 @@ class <#=requestBuilderType#>(RequestBuilderBase):
             requestBuilderInitializerBuilder.Append("._prop_dict");
     }
     foreach (var param in method.Parameters.Where(p => p.IsNullable)){
-        requestConstructorBuilder.Append(", self._method_options[\""+param.Name+"\"]");
+        requestConstructorBuilder.Append(", "+param.Name+"=self._method_options[\""+param.Name+"\"]");
         paramStringBuilder.Append(", " + param.Name.ToUnderscore() + "=None");
         requestBuilderInitializerBuilder.Append(Environment.NewLine);
         requestBuilderInitializerBuilder.Append("        ");

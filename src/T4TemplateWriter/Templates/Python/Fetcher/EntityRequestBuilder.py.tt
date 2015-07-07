@@ -135,7 +135,7 @@ class <#=entityBuilder#>(RequestBuilderBase):
             }
             foreach (var param in method.Parameters.Where(p => p.IsNullable)){
                 paramStringBuilder.Append(", " + param.Name.ToUnderscore()+"=None");
-                builderInitializerBuilder.Append(", " + param.Name.ToUnderscore());
+                builderInitializerBuilder.Append(", " + param.Name.ToUnderscore() + "=" + param.Name.ToUnderscore());
             }
         }
 #>
