@@ -22,7 +22,6 @@ var jsonContentType     = "application/json";
 
 from ..request_base import RequestBase
 from ..request_builder_base import RequestBuilderBase
-from ..Requests.<#=innerEntityRequestBuilder.ToUnderscore()#> import <#=innerEntityRequestBuilder#>
 from ..Models.collection_page import CollectionPage
 from ..Models.<#=innerEntityType.ToUnderscore()#> import <#=innerEntityType#>
 import asyncio
@@ -155,3 +154,5 @@ class <#=collectionPage#>(CollectionPage):
             return self._next_page_request
         except:
             return None
+
+from ..Requests.<#=innerEntityRequestBuilder.ToUnderscore()#> import <#=innerEntityRequestBuilder#>

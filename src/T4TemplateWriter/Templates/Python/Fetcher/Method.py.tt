@@ -12,6 +12,7 @@ var httpMethod          = method.IsAction ? "POST" : "GET";
 var requestType         = entityName + method.Name.Substring(method.Name.IndexOf('.') + 1).ToUpperFirstChar() + "Request";
 var requestBuilderType  = requestType + "Builder";
 var returnType          = method.ReturnType.Name.ToUpperFirstChar();
+var returnTypeCollection= "ItemsCollectionResponse";
 bool hasParameters      = method.Parameters != null && method.Parameters.Any();
 TemplateWriterSettings settings = ConfigurationService.Settings;
 
@@ -19,7 +20,14 @@ TemplateWriterSettings settings = ConfigurationService.Settings;
 <#=writer.WriteHeader()#>
 
 from ..Models.<#=returnType.ToUnderscore()#> import <#=returnType#>
-from ..request_base import RequestBase
+<#=method.IsCollection ? "from ..collection_base import CollectionRequestBase" : "from ..request_base import RequestBase"#>
+<#
+if (method.IsCollection) {
+#>
+from ..Requests.items_collection import ItemsCollectionResponse
+<#
+}
+#>
 from ..request_builder_base import RequestBuilderBase
 <#
 if (method.IsMethodAsync()){
@@ -32,13 +40,21 @@ from ..options import *
 import asyncio
 import json
 
-class <#=requestType#>(RequestBase):
+class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "RequestBase"#>):
 <#
     var paramStringBuilder = new System.Text.StringBuilder();
     var requestBodyInitializerBuilder = new System.Text.StringBuilder();
     paramStringBuilder.Append("self, request_url, client, options");
 
-    foreach (var param in method.Parameters){
+    foreach (var param in method.Parameters.Where(p => !p.IsNullable)){
+        paramStringBuilder.Append(", " + param.Name.ToUnderscore());
+        requestBodyInitializerBuilder.Append("        ");
+        requestBodyInitializerBuilder.Append(method.IsAction ? "self.body_options" : "self._query_options");
+        requestBodyInitializerBuilder.Append("[\""+param.Name+"\"]");
+        requestBodyInitializerBuilder.Append(" = "+param.Name.ToUnderscore());
+        requestBodyInitializerBuilder.Append(Environment.NewLine);
+    }
+    foreach (var param in method.Parameters.Where(p => p.IsNullable)){
         paramStringBuilder.Append(", " + param.Name.ToUnderscore() + "=None");
         requestBodyInitializerBuilder.Append("        ");
         requestBodyInitializerBuilder.Append(method.IsAction ? "self.body_options" : "self._query_options");
@@ -87,7 +103,7 @@ class <#=requestType#>(RequestBase):
 <#
         } else {
 #>
-        entity = <#=returnType#>(json.loads(self.send(self.body_options).content))
+        entity = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(self.send(self.body_options).content))
 <#
         }
 #>
@@ -111,7 +127,7 @@ class <#=requestType#>(RequestBase):
 <#
         } else {
 #>
-        entity = <#=returnType#>(json.loads(entity_response.content))
+        entity = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(entity_response.content))
 <#
         }
 #>
@@ -130,7 +146,7 @@ class <#=requestType#>(RequestBase):
 <#
         } else {
 #>
-        entity = <#=returnType#>(json.loads(self.send().content))
+        entity = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(self.send().content))
 <#
         }
 #>
@@ -153,7 +169,7 @@ class <#=requestType#>(RequestBase):
 <#
         } else {
 #>
-        entity = <#=returnType#>(json.loads(entity_response.content))
+        entity = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(entity_response.content))
 <#
         }
 #>
@@ -161,18 +177,6 @@ class <#=requestType#>(RequestBase):
 <#
     }
 #>
-
-    def expand(self, value):
-        self._query_options["expand"] = value
-        return self
-
-    def select(self, value):
-        self._query_options["select"] = value
-        return self
-    
-    def top(self, value):
-        self._query_options["top"] = value
-        return self
 
 class <#=requestBuilderType#>(RequestBuilderBase):
 <#
@@ -183,24 +187,29 @@ class <#=requestBuilderType#>(RequestBuilderBase):
     requestConstructorBuilder.Append("self.request_url, self.client, options");
     paramStringBuilder.Append("self, request_url, client");
 
-    foreach (var param in method.Parameters){
-        requestConstructorBuilder.Append(", self.method_options[\""+param.Name+"\"]");
-        paramStringBuilder.Append(", " + param.Name.ToUnderscore() + "=None");
-        requestBuilderInitializerBuilder.Append("        ");
-        requestBuilderInitializerBuilder.Append(param.Name.ToUnderscore()+"_content = None");
+    foreach (var param in method.Parameters.Where(p => !p.IsNullable)){
+        requestConstructorBuilder.Append(", self._method_options[\""+param.Name+"\"]");
+        paramStringBuilder.Append(", " + param.Name.ToUnderscore());
         requestBuilderInitializerBuilder.Append(Environment.NewLine);
         requestBuilderInitializerBuilder.Append("        ");
-        requestBuilderInitializerBuilder.Append("if "+param.Name.ToUnderscore()+" is not None:");
-        requestBuilderInitializerBuilder.Append(Environment.NewLine);
-        requestBuilderInitializerBuilder.Append("            ");
-        requestBuilderInitializerBuilder.Append(param.Name.ToUnderscore()+"_content = "+param.Name.ToUnderscore()+" if isinstance("+param.Name.ToUnderscore()+", str) else "+param.Name.ToUnderscore()+"._prop_dict");
-        requestBuilderInitializerBuilder.Append(Environment.NewLine);
-        requestBuilderInitializerBuilder.Append("        ");
-        requestBuilderInitializerBuilder.Append("self.method_options");
+        requestBuilderInitializerBuilder.Append("self._method_options");
         requestBuilderInitializerBuilder.Append("[\""+param.Name+"\"]");
-        requestBuilderInitializerBuilder.Append(" = "+param.Name.ToUnderscore()+"_content");
-        requestBuilderInitializerBuilder.Append(Environment.NewLine);
+        requestBuilderInitializerBuilder.Append(" = "+param.Name.ToUnderscore());
+        if (param.Type.IsComplex())
+            requestBuilderInitializerBuilder.Append("._prop_dict");
     }
+    foreach (var param in method.Parameters.Where(p => p.IsNullable)){
+        requestConstructorBuilder.Append(", self._method_options[\""+param.Name+"\"]");
+        paramStringBuilder.Append(", " + param.Name.ToUnderscore() + "=None");
+        requestBuilderInitializerBuilder.Append(Environment.NewLine);
+        requestBuilderInitializerBuilder.Append("        ");
+        requestBuilderInitializerBuilder.Append("self._method_options");
+        requestBuilderInitializerBuilder.Append("[\""+param.Name+"\"]");
+        requestBuilderInitializerBuilder.Append(" = "+param.Name.ToUnderscore());
+        if (param.Type.IsComplex())
+            requestBuilderInitializerBuilder.Append("._prop_dict");
+    }
+
 #>
 
     def __init__(<#=paramStringBuilder.ToString()#>):
@@ -208,7 +217,7 @@ class <#=requestBuilderType#>(RequestBuilderBase):
 <#
     if (hasParameters) {
 #>
-        self.method_options = {}
+        self._method_options = {}
 <#=requestBuilderInitializerBuilder.ToString()#>
 <#
     }
@@ -216,18 +225,3 @@ class <#=requestBuilderType#>(RequestBuilderBase):
 
     def request(self, options=None):
         return <#=requestType#>(<#=requestConstructorBuilder#>)
-
-<#
-    if (hasParameters) {
-#>
-    @property
-    def method_options(self):
-        return self._method_options
-    
-    @method_options.setter
-    def method_options(self, value):
-        self._method_options=value
-
-<#
-    }
-#>

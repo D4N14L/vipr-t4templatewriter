@@ -102,14 +102,18 @@ class <#=entityBuilder#>(RequestBuilderBase):
         builderInitializerBuilder.Append("self.client");
 
         if (method.Parameters != null && method.Parameters.Any()){
-            foreach (var param in method.Parameters){
+            foreach (var param in method.Parameters.Where(p => !p.IsNullable)){
                 paramStringBuilder.Append(", " + param.Name.ToUnderscore());
+                builderInitializerBuilder.Append(", " + param.Name.ToUnderscore());
+            }
+            foreach (var param in method.Parameters.Where(p => p.IsNullable)){
+                paramStringBuilder.Append(", " + param.Name.ToUnderscore()+"=None");
                 builderInitializerBuilder.Append(", " + param.Name.ToUnderscore());
             }
         }
 #>
 
-    def <#=baseName.ToUnderscore()#>(<#=paramStringBuilder.ToString()#>):
+    def <#=methodName.ToUnderscore()#>(<#=paramStringBuilder.ToString()#>):
         return <#=baseName#>RequestBuilder(<#=builderInitializerBuilder.ToString()#>)
 
 <#
