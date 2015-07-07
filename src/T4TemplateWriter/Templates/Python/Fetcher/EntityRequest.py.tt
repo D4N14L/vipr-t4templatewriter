@@ -30,20 +30,6 @@ class <#=entityRequest#>(RequestBase):
         :type options: dict"""
         super().__init__(request_url, client, options)
 
-    @asyncio.coroutine
-    def create_async(self, <#=entity.Name.ToUnderscore()#>):
-        """Creates the specified <#=entityName#> using PUT
-
-        :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to create.
-        :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
-        :returns: The created <#=entityName#>.
-        :rtype: <#=entityName#>."""
-        self.content_type = "<#=jsonContentType#>"
-        self.method = "PUT"
-        entity = self.send_async(<#=entity.Name.ToUnderscore()#>) #note is this how I want to do the sending? old was awat this.send...
-        # self.InitializeCollectionProperties(entity); this must be done, for paging, but not yet
-        return entity
-
     def delete(self):
         """Deletes the specified <#=entityName#>."""
         self.method = "DELETE"
@@ -75,10 +61,10 @@ class <#=entityRequest#>(RequestBase):
         self._initialize_collection_properties(entity)
         return entity
 
-    def update(self, item):
+    def update(self, <#=entity.Name.ToUnderscore()#>):
         """Updates the specified <#=entityName#>.
         :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to update.
-        :type: <#=entityName#>
+        :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
         :returns: The updated <#=entityName#>.
         :rtype: <#=entityName#>"""
         self.content_type = "application/json"
@@ -89,41 +75,14 @@ class <#=entityRequest#>(RequestBase):
     def update_async(self, <#=entity.Name.ToUnderscore()#>):
         """Updates the specified <#=entityName#>.
         :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to update.
-        :type: <#=entityName#>
+        :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
         :returns: The updated <#=entityName#>.
         :rtype: <#=entityName#>"""
         self.content_type = "<#=jsonContentType#>"
         self.method = "PATCH"
         entity = <#=entityName#>(json.loads(self.send_async(<#=entity.Name.ToUnderscore()#>).content))
         self._initialize_collection_properties(entity)
-        return entity;
-
-    def expand(self, value):
-        """Adds the specified expand value to the request.
-        :param value: The expand value.
-        :type: str
-        :returns: The request object to send.
-        :rtype: <#=entityRequest#>"""
-        self._query_options["expand"] = value
-        return self
-
-    def select(self, value):
-        """Adds the specified select value to the request.
-        :param value: The select value.
-        :type: str
-        :returns: The request object to send.
-        :rtype: <#=entityRequest#>"""
-        self._query_options["select"] = value
-        return self
-    
-    def top(self, value):
-        """Adds the specified select top to the request.
-        :param value: The top value.
-        :type: str
-        :returns: The request object to send.
-        :rtype: <#=entityRequest#>"""
-        self._query_options["top"] = value
-        return self
+        return entity
 
 <#
         var collectionProperties = entity.Properties.Where(property => property.IsCollection() && property.Type.IsComplex());
@@ -132,17 +91,17 @@ class <#=entityRequest#>(RequestBase):
         {
 #>
     def _initialize_collection_properties(self, value):
-        if value and value.additional_data:
+        if value and value._prop_dict:
 <#
             foreach(var property in collectionProperties)
             {
                 var propertyName = property.Name.ToUnderscore();
                 var propertyType = property.GetTypeString();
 #>
-            if value.<#=propertyName#> and value.<#=propertyName#>.current_page:
-                next_page_link = value.additional_data["<#=propertyName.ToLowerFirstChar()#>@odata.nextLink"]
-                if next_page_link:
-                    value.<#=propertyName#>.initialize_next_page_request(self.client, next_page_link)
+            if value.<#=propertyName#> and value.<#=propertyName#>._prop_dict:
+                if "<#=propertyName.ToLowerFirstChar()#>@odata.nextLink" in value._prop_dict:
+                    next_page_link = value._prop_dict["<#=propertyName.ToLowerFirstChar()#>@odata.nextLink"]
+                    value.<#=propertyName#>._init_next_page_request(next_page_link, self.client, None)
 <#
             }
         }

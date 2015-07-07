@@ -20,14 +20,14 @@ var jsonContentType     = "application/json";
 #>
 <#=writer.WriteHeader()#>
 
-from ..request_base import RequestBase
+from ..collection_base import CollectionRequestBase
 from ..request_builder_base import RequestBuilderBase
 from ..Models.collection_page import CollectionPage
 from ..Models.<#=innerEntityType.ToUnderscore()#> import <#=innerEntityType#>
 import asyncio
 import json
 
-class <#=collectionRequest#>(RequestBase):
+class <#=collectionRequest#>(CollectionRequestBase):
     
     def __init__(self, request_url, client, options):
         super(<#=collectionRequest#>, self).__init__(request_url, client, options)
@@ -52,63 +52,34 @@ class <#=collectionRequest#>(RequestBase):
 <#
     }
 #>
-    def _parse_response(self, response):
-        """returns: The CollectionPage from within the response
-        :rtype: <#=collectionPage#>"""
-        if response and response.value:
-            if "@odata.nextLink" in response.additional_data:
-                next_page_link = response.additional_data["@odata.nextLink"]
-                return response.value.initialize_next_page_request(self.client, next_page_link)
-            return response.value
-        return None 
-
     def get(self):
-        """returns: The CollectionPage
+        """returns: The <#=collectionPage#>
         :rtype: <#=collectionPage#>"""
         self.method = "GET"
         response = <#=collectionResponse#>(json.loads(self.send().content))
-        return self._parse_response(response)
+        return self._page_from_response(response)
 
     @asyncio.coroutine
     def get_async(self):
-        """returns: The CollectionPage
+        """returns: The <#=collectionPage#>
         :rtype: <#=collectionPage#>"""
         self.method = "GET"
         response = yield from self.send_async()
         response_collection = <#=collectionResponse#>(json.loads(response.content))
-        return self._parse_response(response_collection)
-    
-    def expand(self, value):
-        """Adds the specified expand value to the request.
-        :param value: The expand value.
-        :type: str
-        :returns: The request object to send.
-        :rtype: <#=collectionRequest#>"""
-        self._query_options["expand"] = value
-        return self
+        return self._page_from_response(response_collection)
 
-    def select(self, value):
-        """Adds the specified select value to the request.
-        :param value: The select value.
-        :type: str
-        :returns: The request object to send.
-        :rtype: <#=collectionRequest#>"""
-        self._query_options["select"] = value
-        return self
-    
-    def top(self, value):
-        """Adds the specified select top to the request.
-        :param value: The top value.
-        :type: str
-        :returns: The request object to send.
-        :rtype: <#=collectionRequest#>"""
-        self._query_options["top"] = value
-        return self
+    def _page_from_response(self, response):
+        """returns: The <#=collectionPage#> from within the response
+        :rtype: <#=collectionPage#>"""
+        if response and response.value:
+            if "@odata.nextLink" in response._prop_dict:
+                next_page_link = response._prop_dict["@odata.nextLink"]
+                response.value._init_next_page_request(next_page_link, self.client, None)
+                return response.value
+            return response.value
+        return None 
 
 class <#=collectionRequestBuilder#>(RequestBuilderBase):
-
-    def __init__(self, request_url, client):
-        super(<#=collectionRequestBuilder#>, self).__init__(request_url, client)
 
     def __getitem__(self, key):
         return <#=innerEntityRequestBuilder#>(self.append_to_request_url(key), self.client)
@@ -120,14 +91,16 @@ class <#=collectionResponse#>(object):
 
     def __init__(self, prop_dict={}):
         self._prop_dict = prop_dict
+        self._collection_page = None
 
     @property
     def value(self):
-        return <#=collectionPage#>(self._prop_dict["value"])
+        if self._collection_page:
+            self._collection_page._prop_list = self._prop_dict["value"]
+        else:
+            self._collection_page = <#=collectionPage#>(self._prop_dict["value"])
 
-    @property
-    def additional_data(self):
-        return self._prop_dict
+        return self._collection_page
 
 class <#=collectionPage#>(CollectionPage):
 
@@ -142,17 +115,7 @@ class <#=collectionPage#>(CollectionPage):
         while current < len(self._prop_list) :
             yield <#=innerEntityType#>(self._prop_list[current])
 
-    def initialize_next_page_request(self, client, next_page_link):
-        if next_page_link:
-            self._next_page_request = <#=collectionRequest#>(next_page_link, client, None)
-            return self
-        return None
-
-    @property
-    def next_page_request(self):
-        try:
-            return self._next_page_request
-        except:
-            return None
+    def _init_next_page_request(self, next_page_link, client, options):
+        self._next_page_request = <#=collectionRequest#>(next_page_link, client, options)
 
 from ..Requests.<#=innerEntityRequestBuilder.ToUnderscore()#> import <#=innerEntityRequestBuilder#>

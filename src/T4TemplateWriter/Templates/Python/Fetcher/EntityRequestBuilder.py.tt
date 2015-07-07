@@ -37,7 +37,14 @@ class <#=entityBuilder#>(RequestBuilderBase):
     def __init__(self, request_url, client):
         super(<#=entityBuilder#>, self).__init__(request_url, client)
 
-    def request(self, options = None):
+    def request(self, options=None):
+        """
+        Builds the <#=entityRequest#>
+        :param options: List of options to include in the request
+        :type options: List of type Options
+        :returns: The request
+        :rtype: <#=entityRequest#>
+        """
         return <#=entityRequest#>(self.request_url, self.client, options)
 
 <#  foreach(var child in entity.Derived)
@@ -47,6 +54,11 @@ class <#=entityBuilder#>(RequestBuilderBase):
 #>
     @property
     def <#=childName#>(self):
+        """
+        The <#=childName#> for the <#=entityBuilder#>
+        :returns: A request builder created from the <#=entityBuilder#>
+        :rtype: <#=childNameBuilder#>
+        """
         return <#=childNameBuilder#>(self.append_to_request_url("<#=child.Name#>"), self.client)
 
 <#
@@ -64,6 +76,11 @@ class <#=entityBuilder#>(RequestBuilderBase):
 
     @property
     def <#=propName#>(self):
+        """
+        The <#=propName#> for the <#=entityBuilder#>
+        :returns: A request builder created from the <#=entityBuilder#>
+        :rtype: <#=collectionRequestBuilder#>
+        """
         return <#=collectionRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
 <#
         }
@@ -73,6 +90,11 @@ class <#=entityBuilder#>(RequestBuilderBase):
 
     @property
     def <#=propName#>(self):
+        """
+        The <#=propName#> for the <#=entityBuilder#>
+        :returns: A request builder created from the <#=entityBuilder#>
+        :rtype: <#=propRequestBuilder#>
+        """
         return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
 
 <#
@@ -86,6 +108,11 @@ class <#=entityBuilder#>(RequestBuilderBase):
 
     @property
     def <#=propName#>(self):
+        """
+        The <#=propName#> for the <#=entityBuilder#>
+        :returns: A request builder created from the <#=entityBuilder#>
+        :rtype: <#=propRequestBuilder#>
+        """
         return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
 <#
     }
@@ -114,6 +141,21 @@ class <#=entityBuilder#>(RequestBuilderBase):
 #>
 
     def <#=methodName.ToUnderscore()#>(<#=paramStringBuilder.ToString()#>):
+        """
+        Executes the <#=methodName#> method
+<#
+        if (method.Parameters != null && method.Parameters.Any()){
+            foreach (var param in method.Parameters){
+#>
+        :param <#=param.Name.ToUnderscore()#>: The <#=param.Name.ToUnderscore()#> to use in the method request
+        :type <#=param.Name.ToUnderscore()#>: <#=param.Type.GetTypeString()#>
+<#
+            }
+        }
+#>
+        :returns: A <#=baseName#>RequestBuilder for the method
+        :rtype: <#=baseName#>RequestBuilder
+        """
         return <#=baseName#>RequestBuilder(<#=builderInitializerBuilder.ToString()#>)
 
 <#

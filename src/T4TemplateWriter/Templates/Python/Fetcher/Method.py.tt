@@ -66,7 +66,7 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 #>
     def __init__(<#=paramStringBuilder.ToString()#>):
         super(<#=requestType#>, self).__init__(request_url, client, options)
-        self.method = "<#=httpMethod#>";
+        self.method = "<#=httpMethod#>"
 <#
         if (method.IsAction) {
 #>
@@ -93,6 +93,11 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 #>
 
     def <#=httpMethod.ToLower()#>(self):
+        """
+        Sends the <#=httpMethod.ToUpper()#> request
+        :returns: The resulting <#=method.IsCollection ? "collection" : "entity"#> from the operation 
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperation<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
+        """
         self.content_type = "application/json"
 <#
         if (method.IsMethodAsync()){
@@ -111,6 +116,11 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 
     @asyncio.coroutine
     def <#=httpMethod.ToLower()#>_async(self):
+        """
+        Sends the <#=httpMethod.ToUpper()#> request using an asyncio coroutine
+        :returns: The resulting <#=method.IsCollection ? "collection" : "entity"#> from the operation 
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperation<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
+        """
 <#
         if (method.IsMethodAsync()){
 #>
@@ -137,6 +147,21 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 #>
 
     def <#=httpMethod.ToLower()#>(self):
+        """
+        Sends the <#=httpMethod.ToUpper()#> request
+        :returns: The resulting <#=method.IsCollection ? "collection response" : "entity"#> from the operation 
+<#
+        if (method.IsMethodAsync()){
+#>
+        :rtype: AsyncOperation       
+<#
+        } else {
+#>
+        :rtype: <#=method.IsCollection ? returnTypeCollection : returnType#>
+<#
+        }
+#>
+        """
 <#
         if (method.IsMethodAsync()){
 #>
@@ -154,6 +179,21 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 
     @asyncio.coroutine
     def <#=httpMethod.ToLower()#>_async(self):
+        """
+        Sends the <#=httpMethod.ToUpper()#> request using an asyncio coroutine
+        :returns: The resulting <#=method.IsCollection ? "collection response" : "entity"#> from the operation 
+<#
+        if (method.IsMethodAsync()){
+#>
+        :rtype: AsyncOperation       
+<#
+        } else {
+#>
+        :rtype: <#=method.IsCollection ? returnTypeCollection : returnType#>
+<#
+        }
+#>
+        """
 <#
         if (method.IsMethodAsync()){
 #>
@@ -224,4 +264,11 @@ class <#=requestBuilderType#>(RequestBuilderBase):
 #>
 
     def request(self, options=None):
+        """
+        Builds the request for the <#=requestType.Replace("Request","")#>
+        :param options: List of options to include in the request
+        :type options: List of type Options
+        :returns: The request
+        :rtype: <#=requestType#>
+        """
         return <#=requestType#>(<#=requestConstructorBuilder#>)
