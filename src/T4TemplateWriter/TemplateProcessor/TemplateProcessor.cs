@@ -136,8 +136,12 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
         }
 
         protected virtual IEnumerable<TextFile> ProcessEntityTypes(TemplateFileInfo templateInfo) {
-            var entityTypes = CurrentModel.GetEntityTypes();
-            foreach (OdcmObject entityType in entityTypes) {
+            var types = CurrentModel.GetEntityTypes();
+            var complexNavigableTypes = CurrentModel.GetComplexTypes().WhereIsNavigable();
+
+            types = types.Union(complexNavigableTypes);
+
+            foreach (OdcmObject entityType in types) {
                 yield return ProcessTemplate(templateInfo, entityType);
             }
         }
@@ -176,11 +180,17 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
 
         public IEnumerable<TextFile> ProcessStreamProperties(TemplateFileInfo templateInfo)
         {
-            var streamProperties = CurrentModel.GetEntityTypes()
+            var properties = CurrentModel.GetEntityTypes()
                 .SelectMany(et => et.Properties)
                 .Where(prop => prop.IsStream);
 
-            foreach (OdcmProperty stream in streamProperties)
+            var complexStreamProperties = CurrentModel.GetComplexTypes()
+                .SelectMany(ct => ct.Properties)
+                .Where(prop => prop.IsStream);
+
+            properties = properties.Union(complexStreamProperties);
+
+            foreach (OdcmProperty stream in properties)
             {
                 string templateName = templateInfo.TemplateBaseName.Replace(
                     "Stream",

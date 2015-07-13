@@ -91,6 +91,21 @@ namespace Vipr.T4TemplateWriter
                                                               || (((OdcmClass)p.Type).Kind == OdcmClassKind.MediaEntity))));
         }
 
+        public static IEnumerable<OdcmProperty> NavigableComplexProperties(this OdcmClass odcmClass)
+        {
+            return odcmClass.Properties.WhereIsNavigable();
+        }
+
+        public static IEnumerable<OdcmProperty> WhereIsNavigable(this IEnumerable<OdcmProperty> odcmProperties)
+        {
+            return odcmProperties.Where(p => p.Type.IsNavigable);
+        }
+
+        public static IEnumerable<OdcmClass> WhereIsNavigable(this IEnumerable<OdcmClass> odcmClasses)
+        {
+            return odcmClasses.Where(p => p.IsNavigable);
+        }
+
 
         public static bool HasActions(this OdcmClass odcmClass)
         {

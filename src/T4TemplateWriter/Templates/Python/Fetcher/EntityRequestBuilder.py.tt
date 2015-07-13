@@ -15,19 +15,32 @@ var jsonContentType     = "application/json";
 from .<#=entityRequest.ToUnderscore()#> import <#=entityRequest#>
 from ..request_builder_base import RequestBuilderBase
 <#
-foreach (var method in entity.Methods){
-    var methodName = method.Name.Substring(method.Name.IndexOf('.') + 1);
-    var baseName = method.Class.Name.ToUpperFirstChar() + methodName.ToUpperFirstChar();
+    foreach (var method in entity.Methods)
+    {
+        var methodName = method.Name.Substring(method.Name.IndexOf('.') + 1);
+        var baseName = method.Class.Name.ToUpperFirstChar() + methodName.ToUpperFirstChar();
 #>
 from ..Requests.<#=baseName.ToUnderscore()#> import <#=baseName#>RequestBuilder
 <#
-}
-foreach(var prop in entity.StreamProperties())
+    }
+    foreach(var prop in entity.StreamProperties())
     {
         var propName = prop.Class.Name.ToUpperFirstChar()+prop.Name.ToUpperFirstChar();
         var propRequestBuilder = propName+"RequestBuilder";
 #>
 from ..Requests.<#=propName.ToUnderscore()#> import <#=propRequestBuilder#>
+<#
+    }
+    List<String> builders = new List<String>();
+    foreach(var prop in entity.NavigableComplexProperties())
+    {
+        var propName = prop.Type.GetTypeString().ToUpperFirstChar();
+        var propRequestBuilder = propName+"RequestBuilder";
+        if (!builders.Contains(propRequestBuilder)) builders.Add(propRequestBuilder);
+    }
+    foreach(var propRequestBuilder in builders) {
+#>
+from ..Requests.<#=propRequestBuilder.ToUnderscore()#> import <#=propRequestBuilder#>
 <#
     }
 #>
@@ -45,7 +58,7 @@ class <#=entityBuilder#>(RequestBuilderBase):
         :returns: The request
         :rtype: <#=entityRequest#>
         """
-        return <#=entityRequest#>(self.request_url, self.client, options)
+        return <#=entityRequest#>(self._request_url, self._client, options)
 
 <#  foreach(var child in entity.Derived)
     {
@@ -59,7 +72,7 @@ class <#=entityBuilder#>(RequestBuilderBase):
         :returns: A request builder created from the <#=entityBuilder#>
         :rtype: <#=childNameBuilder#>
         """
-        return <#=childNameBuilder#>(self.append_to_request_url("<#=child.Name#>"), self.client)
+        return <#=childNameBuilder#>(self.append_to_request_url("<#=child.Name#>"), self._client)
 
 <#
     }
@@ -81,7 +94,7 @@ class <#=entityBuilder#>(RequestBuilderBase):
         :returns: A request builder created from the <#=entityBuilder#>
         :rtype: <#=collectionRequestBuilder#>
         """
-        return <#=collectionRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
+        return <#=collectionRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self._client)
 <#
         }
         else
@@ -95,7 +108,7 @@ class <#=entityBuilder#>(RequestBuilderBase):
         :returns: A request builder created from the <#=entityBuilder#>
         :rtype: <#=propRequestBuilder#>
         """
-        return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
+        return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self._client)
 
 <#
         }
@@ -113,9 +126,26 @@ class <#=entityBuilder#>(RequestBuilderBase):
         :returns: A request builder created from the <#=entityBuilder#>
         :rtype: <#=propRequestBuilder#>
         """
-        return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self.client)
+        return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self._client)
 <#
     }
+
+    foreach(var prop in entity.NavigableComplexProperties()) {
+        var propName = prop.Name.ToUnderscore();
+        var propRequestBuilder = prop.Type.GetTypeString()+"RequestBuilder";
+#>
+
+    @property
+    def <#=propName#>(self):
+        """
+        The <#=propName#> for the <#=entityBuilder#>
+        :returns: A request builder created from the <#=entityBuilder#>
+        :rtype: <#=propRequestBuilder#>
+        """
+        return <#=propRequestBuilder#>(self.append_to_request_url("<#=prop.Name#>"), self._client)
+<#
+    }
+
     foreach(var method in entity.Methods) {
         var methodName = method.Name.Substring(method.Name.IndexOf('.') + 1);
         var baseName = method.Class.Name.ToUpperFirstChar() + methodName.ToUpperFirstChar();
@@ -126,7 +156,7 @@ class <#=entityBuilder#>(RequestBuilderBase):
         paramStringBuilder.Append("self");
 
         builderInitializerBuilder.Append("self.append_to_request_url(\""+method.Name+"\"), ");
-        builderInitializerBuilder.Append("self.client");
+        builderInitializerBuilder.Append("self._client");
 
         if (method.Parameters != null && method.Parameters.Any()){
             foreach (var param in method.Parameters.Where(p => !p.IsNullable)){
