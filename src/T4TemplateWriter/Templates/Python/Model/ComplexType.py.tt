@@ -21,6 +21,11 @@ from ..Models.<#=property.Type.GetTypeString().ToUnderscore()#> import <#=proper
 <#
         }
     }
+    if (complex.Properties.Any(prop => prop.Type.GetTypeString() == "datetime")){
+#>
+from datetime import datetime
+<#
+    }
 #>
 
 class <#=complex.Name.ToUpperFirstChar()#>(object):
@@ -29,7 +34,7 @@ class <#=complex.Name.ToUpperFirstChar()#>(object):
         self._prop_dict = prop_dict
 
 <# 
-        foreach(var property in complex.Properties){
+        foreach(var property in complex.Properties.Where(prop => prop.Type.GetTypeString() != "bytes")){
             var propertyName = property.Name.ToUnderscore();
             if (!property.Type.IsComplex()) {
 #>
@@ -37,7 +42,17 @@ class <#=complex.Name.ToUpperFirstChar()#>(object):
     def <#=propertyName#>(self):
         """Gets <#=property.Name#> """
         if "<#=property.Name#>" in self._prop_dict:
+<#
+            if (property.Type.GetTypeString() == "datetime") {
+#>
+            return datetime.strptime(self._prop_dict["<#=property.Name#>"].replace("Z", ""), "%Y-%m-%dT%H:%M:%S.%f")
+<#
+            } else {
+#>
             return self._prop_dict["<#=property.Name#>"]
+<#
+            }
+#>
         else:
             return None
 
@@ -47,9 +62,18 @@ class <#=complex.Name.ToUpperFirstChar()#>(object):
         if not isinstance(val, <#=property.Type.GetTypeString()#>) and val is not None:
             raise TypeError(
                 'Type provided is not of type ' + <#=property.Type.GetTypeString()#>.__name__)
+<#
+            if (property.Type.GetTypeString() == "datetime") {
+#>
+        self._prop_dict["<#=property.Name#>"] = val.isoformat()+"Z"
+
+<#
+            } else {
+#>
         self._prop_dict["<#=property.Name#>"] = val
 
 <#
+            }
         } else {
 #>
     @property
