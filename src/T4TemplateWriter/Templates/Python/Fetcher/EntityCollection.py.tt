@@ -74,7 +74,7 @@ class <#=collectionRequest#>(CollectionRequestBase):
         if response and response.value:
             if "@odata.nextLink" in response._prop_dict:
                 next_page_link = response._prop_dict["@odata.nextLink"]
-                response.value._init_next_page_request(next_page_link, self.client, None)
+                response.value._init_next_page_request(next_page_link, self._client, None)
                 return response.value
             return response.value
         return None 
@@ -82,10 +82,10 @@ class <#=collectionRequest#>(CollectionRequestBase):
 class <#=collectionRequestBuilder#>(RequestBuilderBase):
 
     def __getitem__(self, key):
-        return <#=innerEntityRequestBuilder#>(self.append_to_request_url(key), self.client)
+        return <#=innerEntityRequestBuilder#>(self.append_to_request_url(key), self._client)
 
     def request(self, options = None):
-        return <#=collectionRequest#>(self.request_url, self.client, options)
+        return <#=collectionRequest#>(self._request_url, self._client, options)
 
 class <#=collectionResponse#>(object):
 
@@ -111,9 +111,8 @@ class <#=collectionPage#>(CollectionPage):
         self._prop_list[key] = item
 
     def items(self):
-        current = 0
-        while current < len(self._prop_list) :
-            yield <#=innerEntityType#>(self._prop_list[current])
+        for item in self._prop_list:
+            yield <#=innerEntityType#>(item)
 
     def _init_next_page_request(self, next_page_link, client, options):
         self._next_page_request = <#=collectionRequest#>(next_page_link, client, options)

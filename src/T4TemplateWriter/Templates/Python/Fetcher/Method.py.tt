@@ -102,9 +102,9 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 <#
         if (method.IsMethodAsync()){
 #>
-        self.headers["Prefer"] = "respond-async"
+        self.append_option(HeaderOption("Prefer", "respond-async"))
         entity_response = self.send(self.body_options)
-        entity = AsyncOperation(entity_response.headers["Location"], self.client, None)
+        entity = AsyncOperation(entity_response.headers["Location"], self._client, None)
 <#
         } else {
 #>
@@ -124,7 +124,7 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 <#
         if (method.IsMethodAsync()){
 #>
-        self.headers["Prefer"] = "respond-async"
+        self.append_option(HeaderOption("Prefer", "respond-async"))
 <#
         }
 #>
@@ -133,7 +133,7 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 <#
         if (method.IsMethodAsync()){
 #>
-        entity = AsyncOperation(entity_response.headers["Location"], self.client, None)
+        entity = AsyncOperation(entity_response.headers["Location"], self._client, None)
 <#
         } else {
 #>
@@ -167,7 +167,7 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 #>
         self.headers["Prefer"] = "respond-async"
         entity_response = self.send()
-        entity = AsyncOperation(entity_response.headers["Location"], self.client, None)
+        entity = AsyncOperation(entity_response.headers["Location"], self._client, None)
 <#
         } else {
 #>
@@ -205,7 +205,7 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 <#
         if (method.IsMethodAsync()){
 #>
-        entity = AsyncOperation(entity_response.headers["Location"], self.client, None)
+        entity = AsyncOperation(entity_response.headers["Location"], self._client, None)
 <#
         } else {
 #>
@@ -224,7 +224,7 @@ class <#=requestBuilderType#>(RequestBuilderBase):
     var requestBuilderInitializerBuilder = new System.Text.StringBuilder();
     var requestConstructorBuilder = new System.Text.StringBuilder();
 
-    requestConstructorBuilder.Append("self.request_url, self.client, options");
+    requestConstructorBuilder.Append("self._request_url, self._client, options");
     paramStringBuilder.Append("self, request_url, client");
 
     foreach (var param in method.Parameters.Where(p => !p.IsNullable)){
@@ -239,7 +239,7 @@ class <#=requestBuilderType#>(RequestBuilderBase):
             requestBuilderInitializerBuilder.Append("._prop_dict");
     }
     foreach (var param in method.Parameters.Where(p => p.IsNullable)){
-        requestConstructorBuilder.Append(", "+param.Name+"=self._method_options[\""+param.Name+"\"]");
+        requestConstructorBuilder.Append(", "+param.Name.ToUnderscore()+"=self._method_options[\""+param.Name+"\"]");
         paramStringBuilder.Append(", " + param.Name.ToUnderscore() + "=None");
         requestBuilderInitializerBuilder.Append(Environment.NewLine);
         requestBuilderInitializerBuilder.Append("        ");

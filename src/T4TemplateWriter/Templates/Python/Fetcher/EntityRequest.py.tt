@@ -101,7 +101,7 @@ class <#=entityRequest#>(RequestBase):
             if value.<#=propertyName#> and value.<#=propertyName#>._prop_dict:
                 if "<#=propertyName.ToLowerFirstChar()#>@odata.nextLink" in value._prop_dict:
                     next_page_link = value._prop_dict["<#=propertyName.ToLowerFirstChar()#>@odata.nextLink"]
-                    value.<#=propertyName#>._init_next_page_request(next_page_link, self.client, None)
+                    value.<#=propertyName#>._init_next_page_request(next_page_link, self._client, None)
 <#
             }
         }

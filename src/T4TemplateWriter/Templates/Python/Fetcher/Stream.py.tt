@@ -87,4 +87,4 @@ class <#=propRequestBuilder#>(RequestBuilderBase):
         super(<#=propRequestBuilder#>, self).__init__(request_url, client)
 
     def request(self):
-        return <#=propRequest#>(self.request_url, self.client, None)
+        return <#=propRequest#>(self._request_url, self._client, None)
