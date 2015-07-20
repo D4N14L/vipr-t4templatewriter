@@ -38,8 +38,9 @@ class <#=entityRequest#>(RequestBase):
     @asyncio.coroutine
     def delete_async(self):
         """Deletes the specified <#=entityName#>."""
-        self.method = "DELETE"
-        self.send_async()
+        future = self._client._loop.run_in_executor(None,
+                                                    self.delete)
+        yield from future
 
     def get(self):
         """Gets the specified <#=entityName#>.
@@ -55,10 +56,9 @@ class <#=entityRequest#>(RequestBase):
         """Gets the specified <#=entityName#>.
         :returns: The <#=entityName#>.
         :rtype: <#=entityName#>"""
-        self.method = "GET"
-        entity_response = yield from self.send_async()
-        entity = <#=entityName#>(json.loads(entity_response.content))
-        self._initialize_collection_properties(entity)
+        future = self._client._loop.run_in_executor(None,
+                                                    self.get)
+        entity = yield from future
         return entity
 
     def update(self, <#=entity.Name.ToUnderscore()#>):
@@ -67,9 +67,11 @@ class <#=entityRequest#>(RequestBase):
         :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
         :returns: The updated <#=entityName#>.
         :rtype: <#=entityName#>"""
-        self.content_type = "application/json"
+        self.content_type = "<#=jsonContentType#>"
         self.method = "PATCH"
-        return Item(json.loads(self.send(item).content))
+        entity = <#=entityName#>(json.loads(self.send(<#=entity.Name.ToUnderscore()#>).content))
+        self._initialize_collection_properties(entity)
+        return entity
 
     @asyncio.coroutine
     def update_async(self, <#=entity.Name.ToUnderscore()#>):
@@ -78,10 +80,10 @@ class <#=entityRequest#>(RequestBase):
         :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
         :returns: The updated <#=entityName#>.
         :rtype: <#=entityName#>"""
-        self.content_type = "<#=jsonContentType#>"
-        self.method = "PATCH"
-        entity = <#=entityName#>(json.loads(self.send_async(<#=entity.Name.ToUnderscore()#>).content))
-        self._initialize_collection_properties(entity)
+        future = self._client._loop.run_in_executor(None,
+                                                    self.update,
+                                                    <#=entity.Name.ToUnderscore()#>)
+        entity = yield from future
         return entity
 
 <#

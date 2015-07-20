@@ -45,8 +45,8 @@ class <#=collectionRequest#>(CollectionRequestBase):
     def add_async(self, entity):
         self.content_type = "<#=jsonContentType#>"
         self.method = "POST"
-        entity_response = yield from self.send_async(entity)
-        entity = <#=innerEntityType#>(json.loads(entity_response.content))
+        response = yield from self.send_async(entity)
+        entity = <#=innerEntityType#>(json.loads(response.content))
         return entity
 
 <#
@@ -56,8 +56,8 @@ class <#=collectionRequest#>(CollectionRequestBase):
         """returns: The <#=collectionPage#>
         :rtype: <#=collectionPage#>"""
         self.method = "GET"
-        response = <#=collectionResponse#>(json.loads(self.send().content))
-        return self._page_from_response(response)
+        collection_response = <#=collectionResponse#>(json.loads(self.send().content))
+        return self._page_from_response(collection_response)
 
     @asyncio.coroutine
     def get_async(self):
@@ -65,19 +65,8 @@ class <#=collectionRequest#>(CollectionRequestBase):
         :rtype: <#=collectionPage#>"""
         self.method = "GET"
         response = yield from self.send_async()
-        response_collection = <#=collectionResponse#>(json.loads(response.content))
-        return self._page_from_response(response_collection)
-
-    def _page_from_response(self, response):
-        """returns: The <#=collectionPage#> from within the response
-        :rtype: <#=collectionPage#>"""
-        if response and response.value:
-            if "@odata.nextLink" in response._prop_dict:
-                next_page_link = response._prop_dict["@odata.nextLink"]
-                response.value._init_next_page_request(next_page_link, self._client, None)
-                return response.value
-            return response.value
-        return None 
+        collection_response = <#=collectionResponse#>(json.loads(response.content))
+        return self._page_from_response(collection_response)
 
 class <#=collectionRequestBuilder#>(RequestBuilderBase):
 
@@ -94,7 +83,7 @@ class <#=collectionResponse#>(object):
         self._collection_page = None
 
     @property
-    def value(self):
+    def collection_page(self):
         if self._collection_page:
             self._collection_page._prop_list = self._prop_dict["value"]
         else:
@@ -110,7 +99,7 @@ class <#=collectionPage#>(CollectionPage):
     def __setitem__(self, key, item):
         self._prop_list[key] = item
 
-    def items(self):
+    def <#=prop.Name.ToUnderscore()#>(self):
         for item in self._prop_list:
             yield <#=innerEntityType#>(item)
 

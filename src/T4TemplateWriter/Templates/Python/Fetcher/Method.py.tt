@@ -32,7 +32,7 @@ from ..request_builder_base import RequestBuilderBase
 <#
 if (method.IsMethodAsync()){
 #>
-from ..async_operation import AsyncOperation
+from ..async_operation_monitor import AsyncOperationMonitor
 <#
 }
 #>
@@ -49,6 +49,9 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
     foreach (var param in method.Parameters.Where(p => !p.IsNullable)){
         paramStringBuilder.Append(", " + param.Name.ToUnderscore());
         requestBodyInitializerBuilder.Append("        ");
+        requestBodyInitializerBuilder.Append("if " + param.Name.ToUnderscore() + ":");
+        requestBodyInitializerBuilder.Append(Environment.NewLine);
+        requestBodyInitializerBuilder.Append("            ");
         requestBodyInitializerBuilder.Append(method.IsAction ? "self.body_options" : "self._query_options");
         requestBodyInitializerBuilder.Append("[\""+param.Name+"\"]");
         requestBodyInitializerBuilder.Append(" = "+param.Name.ToUnderscore());
@@ -57,6 +60,9 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
     foreach (var param in method.Parameters.Where(p => p.IsNullable)){
         paramStringBuilder.Append(", " + param.Name.ToUnderscore() + "=None");
         requestBodyInitializerBuilder.Append("        ");
+        requestBodyInitializerBuilder.Append("if " + param.Name.ToUnderscore() + ":");
+        requestBodyInitializerBuilder.Append(Environment.NewLine);
+        requestBodyInitializerBuilder.Append("            ");
         requestBodyInitializerBuilder.Append(method.IsAction ? "self.body_options" : "self._query_options");
         requestBodyInitializerBuilder.Append("[\""+param.Name+"\"]");
         requestBodyInitializerBuilder.Append(" = "+param.Name.ToUnderscore());
@@ -96,52 +102,35 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
         """
         Sends the <#=httpMethod.ToUpper()#> request
         :returns: The resulting <#=method.IsCollection ? "collection" : "entity"#> from the operation 
-        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperation<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
         """
         self.content_type = "application/json"
 <#
         if (method.IsMethodAsync()){
 #>
         self.append_option(HeaderOption("Prefer", "respond-async"))
-        entity_response = self.send(self.body_options)
-        entity = AsyncOperation(entity_response.headers["Location"], self._client, None)
+        response = self.send(self.body_options)
+        entity = AsyncOperationMonitor(response.headers["Location"], self._client, None)
 <#
         } else {
 #>
-        entity = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(self.send(self.body_options).content))
+        <#=method.IsCollection ? "collection_response" : "entity"#> = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(self.send(self.body_options).content))
 <#
         }
 #>
-        return entity
+        return <#=method.IsCollection ? "self._page_from_response(collection_response)" : "entity"#>
 
     @asyncio.coroutine
     def <#=httpMethod.ToLower()#>_async(self):
         """
         Sends the <#=httpMethod.ToUpper()#> request using an asyncio coroutine
-        :returns: The resulting <#=method.IsCollection ? "collection" : "entity"#> from the operation 
-        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperation<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
+        :returns: The resulting <#=method.IsCollection ? "collection page" : "entity"#> from the operation 
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
         """
-<#
-        if (method.IsMethodAsync()){
-#>
-        self.append_option(HeaderOption("Prefer", "respond-async"))
-<#
-        }
-#>
-        self.content_type = "application/json"
-        entity_response = yield from self.send_async(self.body_options)
-<#
-        if (method.IsMethodAsync()){
-#>
-        entity = AsyncOperation(entity_response.headers["Location"], self._client, None)
-<#
-        } else {
-#>
-        entity = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(entity_response.content))
-<#
-        }
-#>
-        return entity
+        future = self._client._loop.run_in_executor(None,
+                                                    self.<#=httpMethod.ToLower()#>)
+        <#=method.IsCollection ? "collection_response" : "entity"#> = yield from future
+        return <#=method.IsCollection ? "collection_response" : "entity"#>
 <#
     } else {
 #>
@@ -153,7 +142,7 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 <#
         if (method.IsMethodAsync()){
 #>
-        :rtype: AsyncOperation       
+        :rtype: AsyncOperationMonitor       
 <#
         } else {
 #>
@@ -166,54 +155,27 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
         if (method.IsMethodAsync()){
 #>
         self.headers["Prefer"] = "respond-async"
-        entity_response = self.send()
-        entity = AsyncOperation(entity_response.headers["Location"], self._client, None)
+        entity = AsyncOperationMonitor(self.send().headers["Location"], self._client, None)
 <#
         } else {
 #>
-        entity = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(self.send().content))
+        <#=method.IsCollection ? "collection_response" : "entity"#> = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(self.send().content))
 <#
         }
 #>
-        return entity
+        return <#=method.IsCollection ? "self._page_from_response(collection_response)" : "entity"#>
 
     @asyncio.coroutine
     def <#=httpMethod.ToLower()#>_async(self):
         """
         Sends the <#=httpMethod.ToUpper()#> request using an asyncio coroutine
         :returns: The resulting <#=method.IsCollection ? "collection response" : "entity"#> from the operation 
-<#
-        if (method.IsMethodAsync()){
-#>
-        :rtype: AsyncOperation       
-<#
-        } else {
-#>
-        :rtype: <#=method.IsCollection ? returnTypeCollection : returnType#>
-<#
-        }
-#>
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
         """
-<#
-        if (method.IsMethodAsync()){
-#>
-        self.headers["Prefer"] = "respond-async"
-<#
-        }
-#>
-        entity_response = yield from self.send_async()
-<#
-        if (method.IsMethodAsync()){
-#>
-        entity = AsyncOperation(entity_response.headers["Location"], self._client, None)
-<#
-        } else {
-#>
-        entity = <#=method.IsCollection ? returnTypeCollection : returnType#>(json.loads(entity_response.content))
-<#
-        }
-#>
-        return entity
+        future = self._client._loop.run_in_executor(None,
+                                                    self.<#=httpMethod.ToLower()#>)
+        <#=method.IsCollection ? "collection_response" : "entity"#> = yield from future
+        return <#=method.IsCollection ? "collection_response" : "entity"#>
 <#
     }
 #>

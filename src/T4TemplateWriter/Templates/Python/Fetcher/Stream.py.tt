@@ -15,6 +15,7 @@ TemplateWriterSettings settings = ConfigurationService.Settings;
 <#=writer.WriteHeader()#>
 
 import asyncio
+import json
 from ..request_base import RequestBase
 from ..request_builder_base import RequestBuilderBase
 from ..Models.<#=propClass.ToUnderscore()#> import <#=propClass#>
@@ -27,46 +28,51 @@ class <#=propRequest#>(RequestBase):
     if (!type.IsNavigable) {
 #>
     def put(self, <#=prop.Name.ToUnderscore()#>_local_path):
-        """Creates the specified <#=propClass#> using PUT
-
+        """
+        Creates the specified <#=propClass#> using PUT
         :param <#=prop.Name.ToUnderscore()#>: The <#=propClass#> to create.
         :type <#=prop.Name.ToUnderscore()#>: <#=propClass#>
         :returns: The created <#=propClass#>.
-        :rtype: <#=propClass#>."""
+        :rtype: <#=propClass#>
+        """
         self.method = "PUT"
-        entity = <#=propClass#>(self.send(path=<#=prop.Name.ToUnderscore()#>_local_path))
+        entity_response = self.send(path=<#=prop.Name.ToUnderscore()#>_local_path)
+        entity = <#=propClass#>(json.loads(entity_response.content))
         return entity
 
     @asyncio.coroutine
     def put_async(self, <#=prop.Name.ToUnderscore()#>_local_path):
-        """Creates the specified <#=propClass#> using PUT
-
+        """
+        Creates the specified <#=propClass#> using PUT
         :param <#=prop.Name.ToUnderscore()#>: The <#=propClass#> to create.
         :type <#=prop.Name.ToUnderscore()#>: <#=propClass#>
         :returns: The created <#=propClass#>.
-        :rtype: <#=propClass#>."""
-        self.method = "PUT"
-        entity_response = yield from self.send_async(path=<#=prop.Name.ToUnderscore()#>_local_path)
-        entity = <#=propClass#>(entity_response) #note is this how I want to do the sending? old was awat this.send...
+        :rtype: <#=propClass#>
+        """
+        future = self._client._loop.run_in_executor(None,
+                                                    self.put,
+                                                    <#=prop.Name.ToUnderscore()#>_local_path)
+        entity = yield from future
         return entity
 
 <#
     }
 #>
     def download(self, <#=prop.Name.ToUnderscore()#>_local_path):
-        """Gets the specified <#=propClass#>.
-        :returns: The <#=propClass#>.
-        :rtype: <#=propClass#>"""
-        response_path = self.download_item(<#=prop.Name.ToUnderscore()#>_local_path)
-        return response_path
+        """
+        Downloads the specified <#=propClass#>.
+        """
+        self.download_item(<#=prop.Name.ToUnderscore()#>_local_path)
 
     @asyncio.coroutine
     def download_async(self, <#=prop.Name.ToUnderscore()#>_local_path):
-        """Gets the specified <#=propClass#>.
-        :returns: The <#=propClass#>.
-        :rtype: <#=propClass#>"""
-        response_path = yield from self.download_item_async(<#=prop.Name.ToUnderscore()#>_local_path) #old was send_async(null).. take this into account
-        return response_path
+        """
+        Downloads the specified <#=propClass#> in async.
+        """
+        future = self._client._loop.run_in_executor(None,
+                                                    self.download,
+                                                    <#=prop.Name.ToUnderscore()#>_local_path)
+        yield from future
 
 class <#=propRequestBuilder#>(RequestBuilderBase):
 
