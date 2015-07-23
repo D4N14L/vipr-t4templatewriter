@@ -27,7 +27,7 @@ class <#=propRequest#>(RequestBase):
 <#
     if (!type.IsNavigable) {
 #>
-    def put(self, <#=prop.Name.ToUnderscore()#>_local_path):
+    def upload(self, <#=prop.Name.ToUnderscore()#>_local_path):
         """
         Creates the specified <#=propClass#> using PUT
         :param <#=prop.Name.ToUnderscore()#>: The <#=propClass#> to create.
@@ -41,7 +41,7 @@ class <#=propRequest#>(RequestBase):
         return entity
 
     @asyncio.coroutine
-    def put_async(self, <#=prop.Name.ToUnderscore()#>_local_path):
+    def upload_async(self, <#=prop.Name.ToUnderscore()#>_local_path):
         """
         Creates the specified <#=propClass#> using PUT
         :param <#=prop.Name.ToUnderscore()#>: The <#=propClass#> to create.
