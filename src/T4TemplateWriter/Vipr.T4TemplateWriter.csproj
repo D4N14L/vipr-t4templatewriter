@@ -77,6 +77,10 @@
     <None Include=".config\TemplateWriterSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Templates\Python\Fetcher\EntityClient.py.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Templates\Python\Fetcher\EntityCollection.py.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -181,6 +185,11 @@
     <None Include="packages.config" />
     <None Include="Templates\ObjC\Fetcher\Fetchers.h.tt">
       <LastGenOutput>Fetchers.h</LastGenOutput>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\Python\Other\__init__.py.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>__init__.py.cs</LastGenOutput>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
