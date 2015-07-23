@@ -78,7 +78,7 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
                 {FileType.EntityCollection,             ProcessCollectionProperties}, //added
                 {FileType.Method,                       ProcessMethodTypes},         
                 {FileType.Stream,                       ProcessStreamProperties},     
-                {FileType.EntityOperations,             ProcessEntityTypes},
+                {FileType.EntityOperations,             ProcessEntityTypes}, //REMEMBER
 
                 // EntityContainer
                 {FileType.EntityClient,                 ProcessEntityContainerType},
@@ -150,7 +150,7 @@ namespace Vipr.T4TemplateWriter.TemplateProcessor {
         {
             var collections = CurrentModel.GetEntityTypes().
                 SelectMany(et => et.Properties).
-                Where(prop => prop.IsCollection && prop.Type != null);
+                Where(prop => prop.IsCollection && prop.Type != null && prop.Type.Name != "String");
 
             var containerEntitySets = CurrentModel.EntityContainer.Properties;
             containerEntitySets.ForEach(set => set.IsCollection = true);
