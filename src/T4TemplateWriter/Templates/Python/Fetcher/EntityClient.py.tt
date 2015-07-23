@@ -1,0 +1,74 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension="\\" #>
+<#
+CustomT4Host host       = (CustomT4Host) Host;
+OdcmModel model         = host.CurrentModel;
+CodeWriterPython writer = (CodeWriterPython) host.CodeWriter;
+var entityName = writer.GetPrefix().ToUpperFirstChar()+"Client";
+#>
+<#=writer.WriteHeader()#>
+
+<#
+var containerProperties = model.EntityContainer.Properties;
+
+foreach(var prop in containerProperties){
+var builderName = prop.Name.ToUpperFirstChar()+"CollectionRequestBuilder";
+#>
+from ..Requests.<#=(prop.Name+"Collection").ToUnderscore()#> import <#=builderName#>
+<#
+}
+#>
+import asyncio
+
+class OneDriveClient(object):
+
+    def __init__(self, base_url, auth_provider, http_provider, loop=asyncio.get_event_loop()):
+        self.base_url = base_url
+        self.auth_provider = auth_provider
+        self.http_provider = http_provider
+        self._loop = loop
+
+    @property
+    def auth_provider(self):
+        return self._auth_provider
+
+    @auth_provider.setter
+    def auth_provider(self, value):
+        self._auth_provider = value
+
+    @property
+    def http_provider(self):
+        return self._http_provider
+
+    @http_provider.setter
+    def http_provider(self, value):
+        self._http_provider = value
+
+    @property
+    def base_url(self):
+        return self._base_url
+
+    @base_url.setter
+    def base_url(self, value):
+        if not isinstance(value, str):
+            raise TypeError('The value passed is not of type str')
+        self._base_url = value
+<#
+foreach(var prop in containerProperties){
+    if (prop.IsCollection()){
+#>
+
+    @property
+    def <#=prop.Name.ToUnderscore()#>(self):
+        return <#=(prop.Name.ToUpperFirstChar()+"CollectionRequestBuilder").ToUpperFirstChar()#>(self.base_url + "<#=prop.Name#>", self)
+<#
+    } else {
+#>
+
+    @property
+    def <#=prop.Name.ToUnderscore()#>(self):
+        return <#=(prop.Type.GetTypeString()+"RequestBuilder").ToUpperFirstChar()#>(self.base_url + "<#=prop.Name#>", self)
+<#
+    }
+}
+#>
