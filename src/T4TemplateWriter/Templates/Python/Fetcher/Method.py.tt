@@ -40,6 +40,7 @@ from ..options import *
 import asyncio
 import json
 
+
 class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "RequestBase"#>):
 <#
     var paramStringBuilder = new System.Text.StringBuilder();
@@ -48,6 +49,7 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 
     foreach (var param in method.Parameters.Where(p => !p.IsNullable)){
         paramStringBuilder.Append(", " + param.Name.ToUnderscore());
+        requestBodyInitializerBuilder.Append(Environment.NewLine);
         requestBodyInitializerBuilder.Append("        ");
         requestBodyInitializerBuilder.Append("if " + param.Name.ToUnderscore() + ":");
         requestBodyInitializerBuilder.Append(Environment.NewLine);
@@ -55,10 +57,10 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
         requestBodyInitializerBuilder.Append(method.IsAction ? "self.body_options" : "self._query_options");
         requestBodyInitializerBuilder.Append("[\""+param.Name+"\"]");
         requestBodyInitializerBuilder.Append(" = "+param.Name.ToUnderscore());
-        requestBodyInitializerBuilder.Append(Environment.NewLine);
     }
     foreach (var param in method.Parameters.Where(p => p.IsNullable)){
         paramStringBuilder.Append(", " + param.Name.ToUnderscore() + "=None");
+        requestBodyInitializerBuilder.Append(Environment.NewLine);
         requestBodyInitializerBuilder.Append("        ");
         requestBodyInitializerBuilder.Append("if " + param.Name.ToUnderscore() + ":");
         requestBodyInitializerBuilder.Append(Environment.NewLine);
@@ -66,10 +68,10 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
         requestBodyInitializerBuilder.Append(method.IsAction ? "self.body_options" : "self._query_options");
         requestBodyInitializerBuilder.Append("[\""+param.Name+"\"]");
         requestBodyInitializerBuilder.Append(" = "+param.Name.ToUnderscore());
-        requestBodyInitializerBuilder.Append(Environment.NewLine);
     }
 
 #>
+
     def __init__(<#=paramStringBuilder.ToString()#>):
         super(<#=requestType#>, self).__init__(request_url, client, options)
         self.method = "<#=httpMethod#>"
@@ -86,10 +88,11 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
     }
     if (method.IsAction) {
 #>
+
     @property
     def body_options(self):
         return self._body_options
-    
+
     @body_options.setter
     def body_options(self, value):
         self._body_options=value
@@ -101,8 +104,8 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
     def <#=httpMethod.ToLower()#>(self):
         """
         Sends the <#=httpMethod.ToUpper()#> request
-        :returns: The resulting <#=method.IsCollection ? "collection" : "entity"#> from the operation 
-        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
+        :returns: The resulting <#=method.IsCollection ? "collection" : "entity"#> from the operation
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection+"\n" : returnType+"\n"#><#}#>
         """
         self.content_type = "application/json"
 <#
@@ -124,8 +127,8 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
     def <#=httpMethod.ToLower()#>_async(self):
         """
         Sends the <#=httpMethod.ToUpper()#> request using an asyncio coroutine
-        :returns: The resulting <#=method.IsCollection ? "collection page" : "entity"#> from the operation 
-        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
+        :returns: The resulting <#=method.IsCollection ? "collection page" : "entity"#> from the operation
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection+"\n" : returnType+"\n"#><#}#>
         """
         future = self._client._loop.run_in_executor(None,
                                                     self.<#=httpMethod.ToLower()#>)
@@ -138,18 +141,8 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
     def <#=httpMethod.ToLower()#>(self):
         """
         Sends the <#=httpMethod.ToUpper()#> request
-        :returns: The resulting <#=method.IsCollection ? "collection response" : "entity"#> from the operation 
-<#
-        if (method.IsMethodAsync()){
-#>
-        :rtype: AsyncOperationMonitor       
-<#
-        } else {
-#>
-        :rtype: <#=method.IsCollection ? returnTypeCollection : returnType#>
-<#
-        }
-#>
+        :returns: The resulting <#=method.IsCollection ? "collection response" : "entity"#> from the operation
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection+"\n" : returnType+"\n"#><#}#>
         """
 <#
         if (method.IsMethodAsync()){
@@ -169,8 +162,8 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
     def <#=httpMethod.ToLower()#>_async(self):
         """
         Sends the <#=httpMethod.ToUpper()#> request using an asyncio coroutine
-        :returns: The resulting <#=method.IsCollection ? "collection response" : "entity"#> from the operation 
-        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection : returnType#><#}#>
+        :returns: The resulting <#=method.IsCollection ? "collection response" : "entity"#> from the operation
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection+"\n" : returnType+"\n"#><#}#>
         """
         future = self._client._loop.run_in_executor(None,
                                                     self.<#=httpMethod.ToLower()#>)
@@ -179,6 +172,7 @@ class <#=requestType#>(<#=method.IsCollection ? "CollectionRequestBase" : "Reque
 <#
     }
 #>
+
 
 class <#=requestBuilderType#>(RequestBuilderBase):
 <#
@@ -234,3 +228,21 @@ class <#=requestBuilderType#>(RequestBuilderBase):
         :rtype: <#=requestType#>
         """
         return <#=requestType#>(<#=requestConstructorBuilder#>)
+
+    def <#=httpMethod.ToLower()#>(self):
+        """
+        Sends the <#=httpMethod.ToUpper()#> request
+        :returns: The resulting <#=method.IsCollection ? "collection" : "entity"#> from the operation
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection+"\n" : returnType+"\n"#><#}#>
+        """
+        return self.request().<#=httpMethod.ToLower()#>()
+
+    @asyncio.coroutine
+    def <#=httpMethod.ToLower()#>_async(self):
+        """
+        Sends the <#=httpMethod.ToUpper()#> request using an asyncio coroutine
+        :returns: The resulting <#=method.IsCollection ? "collection page" : "entity"#> from the operation
+        :rtype: <#if (method.IsMethodAsync()){#>AsyncOperationMonitor<#} else {#><#=method.IsCollection ? returnTypeCollection+"\n" : returnType+"\n"#><#}#>
+        """
+        <#=method.IsCollection ? "collection_page" : "entity"#> = yield from self.request().<#=httpMethod.ToLower()#>_async()
+        return <#=method.IsCollection ? "collection_page" : "entity"#>

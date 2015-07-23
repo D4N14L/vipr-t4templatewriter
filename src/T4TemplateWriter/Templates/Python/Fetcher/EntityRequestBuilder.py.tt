@@ -44,6 +44,8 @@ from ..Requests.<#=propRequestBuilder.ToUnderscore()#> import <#=propRequestBuil
 <#
     }
 #>
+import asyncio
+
 
 class <#=entityBuilder#>(RequestBuilderBase):
 
@@ -60,7 +62,74 @@ class <#=entityBuilder#>(RequestBuilderBase):
         """
         return <#=entityRequest#>(self._request_url, self._client, options)
 
-<#  foreach(var child in entity.Derived)
+    def delete(self):
+        """Deletes the specified <#=entityName#>."""
+        self.request().delete()
+
+    @asyncio.coroutine
+    def delete_async(self):
+        """Deletes the specified <#=entityName#>."""
+        yield from self.request().delete_async()
+
+    def get(self):
+        """Gets the specified <#=entityName#>.
+        :returns: The <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        return self.request().get()
+
+    @asyncio.coroutine
+    def get_async(self):
+        """Gets the specified <#=entityName#>.
+        :returns: The <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        entity = yield from self.request().get_async()
+        return entity
+
+    def update(self, <#=entity.Name.ToUnderscore()#>):
+        """Updates the specified <#=entityName#>.
+        :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to update.
+        :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
+        :returns: The updated <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        return self.request().update(<#=entity.Name.ToUnderscore()#>)
+
+    @asyncio.coroutine
+    def update_async(self, <#=entity.Name.ToUnderscore()#>):
+        """Updates the specified <#=entityName#>.
+        :param <#=entity.Name.ToUnderscore()#>: The <#=entityName#> to update.
+        :type <#=entity.Name.ToUnderscore()#>: <#=entityName#>
+        :returns: The updated <#=entityName#>.
+        :rtype: <#=entityName#>"""
+        entity = yield from self.request().update_async(<#=entity.Name.ToUnderscore()#>)
+        return entity
+<#
+    if (entity.StreamProperties().Where(t => !(t.Class as OdcmType).IsNavigable).Any()){
+#>
+
+    def upload(self, local_path):
+        return self.content.request().put(local_path)
+
+    @asyncio.coroutine
+    def upload_async(self, local_path):
+        entity = yield from self.content.request().upload_async(local_path)
+        return entity
+<#
+    }
+
+    if (entity.StreamProperties().Any()){
+#>
+
+    def download(self, local_path):
+        return self.content.request().download(local_path)
+
+    @asyncio.coroutine
+    def download_async(self, local_path):
+        entity = yield from self.content.request().download_async(local_path)
+        return entity
+<#
+    }
+
+    foreach(var child in entity.Derived)
     {
         var childName = child.Name.ToUnderscore();
         var childNameBuilder = child.Name.ToUpperFirstChar() + "RequestBuilder";
@@ -169,7 +238,6 @@ class <#=entityBuilder#>(RequestBuilderBase):
             }
         }
 #>
-
     def <#=methodName.ToUnderscore()#>(<#=paramStringBuilder.ToString()#>):
         """
         Executes the <#=methodName#> method

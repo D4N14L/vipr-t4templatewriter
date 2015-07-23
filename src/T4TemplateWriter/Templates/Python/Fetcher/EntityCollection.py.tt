@@ -8,7 +8,7 @@ var clientName          = model.GetEntityContainer().ToUpperFirstChar() + "Clien
 var clientNameLower     = clientName.ToLowerFirstChar();
 var prop                = host.CurrentType as OdcmProperty;
 var innerEntity = prop.Type;
-var innerEntityType = innerEntity.Name.ToUpperFirstChar();
+var innerEntityType = innerEntity.IsComplex() ? innerEntity.GetTypeString().ToUpperFirstChar() : innerEntity.GetTypeString();
 var innerEntityRequestBuilder = innerEntityType + "RequestBuilder";
 var collectionRequest = prop.Name.ToUpperFirstChar() + "CollectionRequest";
 var collectionRequestBuilder = prop.Name.ToUpperFirstChar() + "CollectionRequestBuilder";
@@ -23,12 +23,19 @@ var jsonContentType     = "application/json";
 from ..collection_base import CollectionRequestBase
 from ..request_builder_base import RequestBuilderBase
 from ..Models.collection_page import CollectionPage
+<#
+if (innerEntity.IsComplex()) {
+#>
 from ..Models.<#=innerEntityType.ToUnderscore()#> import <#=innerEntityType#>
+<#
+}
+#>
 import asyncio
 import json
 
+
 class <#=collectionRequest#>(CollectionRequestBase):
-    
+
     def __init__(self, request_url, client, options):
         super(<#=collectionRequest#>, self).__init__(request_url, client, options)
 
@@ -68,13 +75,41 @@ class <#=collectionRequest#>(CollectionRequestBase):
         collection_response = <#=collectionResponse#>(json.loads(response.content))
         return self._page_from_response(collection_response)
 
+
 class <#=collectionRequestBuilder#>(RequestBuilderBase):
 
     def __getitem__(self, key):
-        return <#=innerEntityRequestBuilder#>(self.append_to_request_url(key), self._client)
+        return <#=innerEntityRequestBuilder#>(self.append_to_request_url(str(key)), self._client)
 
-    def request(self, options = None):
+    def request(self, options=None):
         return <#=collectionRequest#>(self._request_url, self._client, options)
+
+<#
+    if (prop.IsCollectionWritable()){
+#>
+    def add(self, entity):
+        return self.request().add(entity)
+
+    @asyncio.coroutine
+    def add_async(self, entity):
+        entity = yield from self.request().add_async(entity)
+        return entity
+
+<#
+    }
+#>
+    def get(self):
+        """returns: The <#=collectionPage#>
+        :rtype: <#=collectionPage#>"""
+        return self.request().get()
+
+    @asyncio.coroutine
+    def get_async(self):
+        """returns: The <#=collectionPage#>
+        :rtype: <#=collectionPage#>"""
+        collection_page = yield from self.request().get_async()
+        return collection_page
+
 
 class <#=collectionResponse#>(object):
 
@@ -91,6 +126,7 @@ class <#=collectionResponse#>(object):
 
         return self._collection_page
 
+
 class <#=collectionPage#>(CollectionPage):
 
     def __getitem__(self, key):
@@ -105,5 +141,6 @@ class <#=collectionPage#>(CollectionPage):
 
     def _init_next_page_request(self, next_page_link, client, options):
         self._next_page_request = <#=collectionRequest#>(next_page_link, client, options)
+
 
 from ..Requests.<#=innerEntityRequestBuilder.ToUnderscore()#> import <#=innerEntityRequestBuilder#>
