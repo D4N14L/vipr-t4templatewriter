@@ -18,10 +18,19 @@ import asyncio
 import json
 from ..request_base import RequestBase
 from ..request_builder_base import RequestBuilderBase
-from ..Models.<#=propClass.ToUnderscore()#> import <#=propClass#>
+from ..models.<#=propClass.ToUnderscore()#> import <#=propClass#>
 
 class <#=propRequest#>(RequestBase):
     def __init__(self, request_url, client, options):
+        """
+        Initialize the <#=propRequest#>
+        :param request_url: The request URL to initialize the <#=propRequest#> at
+        :type request_url: str
+        :param client: The client to use for requests
+        :type client: OneDriveClient
+        :param options: A list of options to pass into the request
+        :type options: List of type Option
+        """
         super(<#=propRequest#>, self).__init__(request_url, client, options)
 
 <#
@@ -29,9 +38,9 @@ class <#=propRequest#>(RequestBase):
 #>
     def upload(self, <#=prop.Name.ToUnderscore()#>_local_path):
         """
-        Creates the specified <#=propClass#> using PUT
-        :param <#=prop.Name.ToUnderscore()#>: The <#=propClass#> to create.
-        :type <#=prop.Name.ToUnderscore()#>: <#=propClass#>
+        Uploads the file using PUT
+        :param <#=prop.Name.ToUnderscore()#>_local_path: The path to the local file to upload.
+        :type <#=prop.Name.ToUnderscore()#>_local_path: str
         :returns: The created <#=propClass#>.
         :rtype: <#=propClass#>
         """
@@ -43,9 +52,9 @@ class <#=propRequest#>(RequestBase):
     @asyncio.coroutine
     def upload_async(self, <#=prop.Name.ToUnderscore()#>_local_path):
         """
-        Creates the specified <#=propClass#> using PUT
-        :param <#=prop.Name.ToUnderscore()#>: The <#=propClass#> to create.
-        :type <#=prop.Name.ToUnderscore()#>: <#=propClass#>
+        Uploads the file using PUT in async
+        :param <#=prop.Name.ToUnderscore()#>_local_path: The path to the local file to upload.
+        :type <#=prop.Name.ToUnderscore()#>_local_path: str
         :returns: The created <#=propClass#>.
         :rtype: <#=propClass#>
         """
@@ -61,6 +70,8 @@ class <#=propRequest#>(RequestBase):
     def download(self, <#=prop.Name.ToUnderscore()#>_local_path):
         """
         Downloads the specified <#=propClass#>.
+        :param <#=prop.Name.ToUnderscore()#>_local_path: The path where the <#=propClass#> should be downloaded to
+        :type <#=prop.Name.ToUnderscore()#>_local_path: str
         """
         self.download_item(<#=prop.Name.ToUnderscore()#>_local_path)
 
@@ -68,6 +79,8 @@ class <#=propRequest#>(RequestBase):
     def download_async(self, <#=prop.Name.ToUnderscore()#>_local_path):
         """
         Downloads the specified <#=propClass#> in async.
+        :param <#=prop.Name.ToUnderscore()#>_local_path: The path where the <#=propClass#> should be downloaded to
+        :type <#=prop.Name.ToUnderscore()#>_local_path: str
         """
         future = self._client._loop.run_in_executor(None,
                                                     self.download,
@@ -77,6 +90,13 @@ class <#=propRequest#>(RequestBase):
 class <#=propRequestBuilder#>(RequestBuilderBase):
 
     def __init__(self, request_url, client):
+        """
+        Initialize the <#=propRequestBuilder#>
+        :param request_url: The request URL to initialize the <#=propRequestBuilder#> at
+        :type request_url: str
+        :param client: The client to use for requests made by the <#=propRequestBuilder#>
+        :type client: OneDriveClient
+        """
         super(<#=propRequestBuilder#>, self).__init__(request_url, client)
 
     def request(self):

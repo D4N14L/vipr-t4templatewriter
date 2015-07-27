@@ -19,7 +19,7 @@ TemplateWriterSettings settings = ConfigurationService.Settings;
             && !property.Type.GetTypeString().Equals(entity.Name.ToUpperFirstChar())) {
             list.Add(property.Type.GetTypeString());
 #>
-from ..Models.<#=property.Type.GetTypeString().ToUnderscore()#> import <#=property.Type.GetTypeString()#>
+from ..models.<#=property.Type.GetTypeString().ToUnderscore()#> import <#=property.Type.GetTypeString()#>
 <#
         }
     }
@@ -44,7 +44,11 @@ class <#=entity.Name.ToUpperFirstChar()#>(object):
 #>
     @property
     def <#=propertyName#>(self):
-        """Gets <#=property.Name#> """
+        """
+        Gets the <#=property.Name#>
+        :returns: The <#=property.Name#>
+        :rtype: <#=property.Type.GetTypeString()#>
+        """
         if "<#=property.Name#>" in self._prop_dict:
             return <#=propertyNameCap#>CollectionPage(self._prop_dict["<#=property.Name#>"])
         else:
@@ -52,7 +56,11 @@ class <#=entity.Name.ToUpperFirstChar()#>(object):
 
     @<#=propertyName#>.setter
     def <#=propertyName#>(self, val):
-        """Sets <#=property.Name#> """
+        """
+        Sets the <#=property.Name#>
+        :param val: The value to set <#=property.Name#> to
+        :type val: <#=property.Type.GetTypeString()#>
+        """
         if not isinstance(val, <#=propertyNameCap#>CollectionPage) and val is not None:
             raise TypeError(
                 'Type provided is not of type ' + <#=propertyNameCap#>CollectionPage.__name__)
@@ -63,7 +71,11 @@ class <#=entity.Name.ToUpperFirstChar()#>(object):
 #>
     @property
     def <#=propertyName#>(self):
-        """Gets <#=property.Name#> """
+        """
+        Gets the <#=property.Name#>
+        :returns: The <#=property.Name#>
+        :rtype: <#=property.Type.GetTypeString()#>
+        """
         if "<#=property.Name#>" in self._prop_dict:
             return <#=property.Type.GetTypeString()#>(self._prop_dict["<#=property.Name#>"])
         else:
@@ -71,7 +83,11 @@ class <#=entity.Name.ToUpperFirstChar()#>(object):
 
     @<#=propertyName#>.setter
     def <#=propertyName#>(self, val):
-        """Sets <#=property.Name#> """
+        """
+        Sets the <#=property.Name#>
+        :param val: The value to set <#=property.Name#> to
+        :type val: <#=property.Type.GetTypeString()#>
+        """
         if not isinstance(val, <#=property.Type.GetTypeString()#>) and val is not None:
             raise TypeError(
                 'Type provided is not of type ' + <#=property.Type.GetTypeString()#>.__name__)
@@ -83,7 +99,11 @@ class <#=entity.Name.ToUpperFirstChar()#>(object):
 #>
     @property
     def <#=propertyName#>(self):
-        """Gets <#=property.Name#> """
+        """
+        Gets the <#=property.Name#>
+        :returns: The <#=property.Name#>
+        :rtype: <#=property.Type.GetTypeString()#>
+        """
         if "<#=property.Name#>" in self._prop_dict:
 <#
             if (property.Type.GetTypeString() == "datetime") {
@@ -101,7 +121,11 @@ class <#=entity.Name.ToUpperFirstChar()#>(object):
 
     @<#=propertyName#>.setter
     def <#=propertyName#>(self, val):
-        """Sets <#=property.Name#> """
+        """
+        Sets the <#=property.Name#>
+        :param val: The value to set <#=property.Name#> to
+        :type val: <#=property.Type.GetTypeString()#>
+        """
         if not isinstance(val, <#=property.Type.GetTypeString()#>) and val is not None:
             raise TypeError(
                 'Type provided is not of type ' + <#=property.Type.GetTypeString()#>.__name__)
@@ -120,7 +144,3 @@ class <#=entity.Name.ToUpperFirstChar()#>(object):
         }
     }
 #>
-    @property
-    def additional_data(self):
-        """Gets additional data dictionary"""
-        return self._prop_dict

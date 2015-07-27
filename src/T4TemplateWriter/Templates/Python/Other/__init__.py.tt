@@ -12,7 +12,7 @@ CodeWriterPython writer = (CodeWriterPython) host.CodeWriter;
 var enumTypes = CurrentModel.GetEnumTypes();
 foreach(var enumType in enumTypes) {
 #>
-from .Models.<#=enumType.GetTypeString().ToUnderscore()#> import <#=enumType.GetTypeString().ToUpperFirstChar()#>
+from .models.<#=enumType.GetTypeString().ToUnderscore()#> import <#=enumType.GetTypeString().ToUpperFirstChar()#>
 <#
 }
 
@@ -25,7 +25,7 @@ complexTypes = complexTypes.Where(t => !complexNavigableTypes.Any(c => c.GetType
 
 foreach (var complex in complexTypes){
 #>
-from .Models.<#=complex.GetTypeString().ToUnderscore()#> import <#=complex.GetTypeString().ToUpperFirstChar()#>
+from .models.<#=complex.GetTypeString().ToUnderscore()#> import <#=complex.GetTypeString().ToUpperFirstChar()#>
 <#
 }
 
@@ -35,16 +35,16 @@ types = types.Union(complexNavigableTypes);
 
 foreach(var entity in types) {
 #>
-from .Models.<#=entity.GetTypeString().ToUnderscore()#> import <#=entity.GetTypeString().ToUpperFirstChar()#>
+from .models.<#=entity.GetTypeString().ToUnderscore()#> import <#=entity.GetTypeString().ToUpperFirstChar()#>
 <#
 }
 
-//Requests and Request Builders
+//requests and Request Builders
 foreach(var entity in types) {
 var name = entity.GetTypeString()+"Request";
 #>
-from .Requests.<#=name.ToUnderscore()#> import <#=name.ToUpperFirstChar()#>
-from .Requests.<#=(name+"Builder").ToUnderscore()#> import <#=(name+"Builder").ToUpperFirstChar()#>
+from .requests.<#=name.ToUnderscore()#> import <#=name.ToUpperFirstChar()#>
+from .requests.<#=(name+"Builder").ToUnderscore()#> import <#=(name+"Builder").ToUpperFirstChar()#>
 <#
 }
 
@@ -64,7 +64,7 @@ var collectionRequestBuilder = prop.Name.ToUpperFirstChar() + "CollectionRequest
 var collectionPage = prop.Name.ToUpperFirstChar() + "CollectionPage";
 var collectionResponse = prop.Name.ToUpperFirstChar() + "CollectionResponse";
 #>
-from .Requests.<#=(prop.Name+"Collection").ToUnderscore()#> import <#=collectionRequest#>, <#=collectionRequestBuilder#>, <#=collectionPage#>, <#=collectionResponse#>
+from .requests.<#=(prop.Name+"Collection").ToUnderscore()#> import <#=collectionRequest#>, <#=collectionRequestBuilder#>, <#=collectionPage#>, <#=collectionResponse#>
 <#
 }
 
@@ -74,7 +74,7 @@ foreach(var m in methods){
 var method = m as OdcmMethod;
 var name = method.Class.Name.ToUpperFirstChar() + method.Name.Substring(method.Name.IndexOf('.') + 1).ToUpperFirstChar();
 #>
-from .Requests.<#=name.ToUnderscore()#> import <#=name+"Request"#>
+from .requests.<#=name.ToUnderscore()#> import <#=name+"Request"#>
 <#
 }
 
@@ -93,7 +93,7 @@ foreach(var p in properties){
 var prop = p as OdcmProperty;
 var name = prop.Class.Name.ToUpperFirstChar() + prop.Name.ToUpperFirstChar();
 #>
-from .Requests.<#=name.ToUnderscore()#> import <#=name#>Request, <#=name#>RequestBuilder
+from .requests.<#=name.ToUnderscore()#> import <#=name#>Request, <#=name#>RequestBuilder
 <#
 }
 
@@ -101,13 +101,13 @@ from .Requests.<#=name.ToUnderscore()#> import <#=name#>Request, <#=name#>Reques
 var container = CurrentModel.EntityContainer;
 if (container != null){
 #>
-from .Requests.one_drive_client import OneDriveClient
+from .requests.one_drive_client import OneDriveClient
 <#
 }
 #>
 from .auth_provider import AuthProvider
 from .http_provider import HttpProvider
-from .Extensions import *
+from .extensions import *
 
 def get_default_client(client_id, scopes):
 

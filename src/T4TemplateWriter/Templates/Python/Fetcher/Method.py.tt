@@ -19,12 +19,12 @@ TemplateWriterSettings settings = ConfigurationService.Settings;
 #>
 <#=writer.WriteHeader()#>
 
-from ..Models.<#=returnType.ToUnderscore()#> import <#=returnType#>
+from ..models.<#=returnType.ToUnderscore()#> import <#=returnType#>
 <#=method.IsCollection ? "from ..collection_base import CollectionRequestBase" : "from ..request_base import RequestBase"#>
 <#
 if (method.IsCollection) {
 #>
-from ..Requests.items_collection import ItemsCollectionResponse
+from ..requests.items_collection import ItemsCollectionResponse
 <#
 }
 #>

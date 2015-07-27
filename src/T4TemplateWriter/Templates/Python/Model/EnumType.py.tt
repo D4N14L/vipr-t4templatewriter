@@ -11,7 +11,7 @@ var enumT = host.CurrentType.AsOdcmEnum();
 from enum import Enum
 
 class <#=enumT.Name.ToUpperFirstChar()#>(Enum):
-    """The Enum <#=enumT.Name.ToUpperFirstChar().SplitCamelCase()#>."""
+    """The Enum <#=enumT.Name.ToUpperFirstChar()#>."""
 <#
     count = 0
     foreach(var value in enumT.Members)

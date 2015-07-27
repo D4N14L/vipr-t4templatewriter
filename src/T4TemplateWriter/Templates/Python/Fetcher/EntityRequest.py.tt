@@ -12,7 +12,7 @@ var jsonContentType     = "application/json";
 <#=writer.WriteHeader()#>
 
 from ..request_base import RequestBase
-from ..Models.<#=entity.Name.ToUnderscore()#> import <#=entityName#>
+from ..models.<#=entity.Name.ToUnderscore()#> import <#=entityName#>
 import asyncio
 import json
 
